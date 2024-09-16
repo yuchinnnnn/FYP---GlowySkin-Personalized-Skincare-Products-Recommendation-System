@@ -39,7 +39,7 @@ public class AdminAddContent extends AppCompatActivity {
     private ImageView back, uploadedImage;
     private EditText title, description;
     private Button uploadImageButton, saveButton, cancelButton;
-    private DatabaseReference databaseReference;
+    private DatabaseReference databaseReference, skincareTipsDatabaseReference;
     private FirebaseAuth mAuth;
     private String userId;
     public static final String ARG_USER_ID = "userId";
@@ -87,6 +87,8 @@ public class AdminAddContent extends AppCompatActivity {
             }
         });
 
+        skincareTipsDatabaseReference = FirebaseDatabase.getInstance().getReference("SkincareTips");
+
         title = findViewById(R.id.tipTitle);
         description = findViewById(R.id.tipDescription);
         uploadedImage = findViewById(R.id.uploadedImage);
@@ -130,7 +132,7 @@ public class AdminAddContent extends AppCompatActivity {
 
     private void loadUploadedImage(String userId) {
         // Construct the path to the user's profile photo URL
-        DatabaseReference profileImageRef = databaseReference.child("skincare_tips_image").child(userId);
+        DatabaseReference profileImageRef = skincareTipsDatabaseReference.child("skincare_tips_image").child(userId);
 
         profileImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -169,36 +171,76 @@ public class AdminAddContent extends AppCompatActivity {
             return;
         }
 
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("tipsTitle", tipsTitle);
-        updates.put("tipsDescription", tipsDescription);
+        // Generate a unique key for each skincare tip
+        String tipId = skincareTipsDatabaseReference.push().getKey();
 
-        databaseReference.updateChildren(updates)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(AdminAddContent.this, "Content updated successfully", Toast.LENGTH_SHORT).show();
-                        if (imageUri != null) {
-                            uploadContentPhoto();
-                        }
-                    } else {
-                        Toast.makeText(AdminAddContent.this, "Failed to update content", Toast.LENGTH_SHORT).show();
+        if (tipId != null) {
+            // Prepare the data to save, including the userId
+            Map<String, Object> tipsData = new HashMap<>();
+            tipsData.put("tipsTitle", tipsTitle);
+            tipsData.put("tipsDescription", tipsDescription);
+            tipsData.put("userId", userId);  // Add userId of the admin who uploads the tips
+
+            databaseReference.child("Admin").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String username = snapshot.child("username").getValue(String.class);
+                    if (username != null) {
+                        tipsData.put("username", username);  // Add the username of the admin
                     }
-                });
+
+                    // Save the tips data under the unique key in the "SkincareTips" node
+                    skincareTipsDatabaseReference.child(tipId).updateChildren(tipsData)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(AdminAddContent.this, "Content saved successfully", Toast.LENGTH_SHORT).show();
+                                    Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+                                    intent.putExtra("userId", userId);
+                                    startActivity(intent);
+                                    if (imageUri != null) {
+                                        // Upload the image and link it with the tipId
+                                        uploadContentPhoto(tipId);
+                                    }
+                                } else {
+                                    Toast.makeText(AdminAddContent.this, "Failed to save content", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(AdminAddContent.this, "Failed to retrieve username", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
-    private void uploadContentPhoto() {
+
+    private void uploadContentPhoto(String tipId) {
         if (imageUri == null) return;
 
-        StorageReference photoRef = storageReference.child("skincare_tips_image.jpg");
+        // Create a unique reference for each image using the tipId
+        StorageReference photoRef = storageReference.child(tipId + "_skincare_tips_image.jpg");
         UploadTask uploadTask = photoRef.putFile(imageUri);
 
         uploadTask.addOnSuccessListener(taskSnapshot -> {
+            // Get the download URL of the uploaded image
             photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                databaseReference.child("Skincare_tips_image").setValue(uri.toString());
-                Toast.makeText(AdminAddContent.this, "Image updated successfully", Toast.LENGTH_SHORT).show();
+                // Save the image URL under the corresponding tipId in the "SkincareTips" node
+                skincareTipsDatabaseReference.child(tipId).child("imageUrl").setValue(uri.toString())
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(AdminAddContent.this, "Image uploaded and URL saved successfully", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(AdminAddContent.this, "Failed to save image URL", Toast.LENGTH_SHORT).show();
+                            }
+                        });
             });
         }).addOnFailureListener(e -> {
             Toast.makeText(AdminAddContent.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
         });
     }
+
+
+
 }
