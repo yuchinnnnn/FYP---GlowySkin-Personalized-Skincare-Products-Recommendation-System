@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "60727879230",
+    "project_id": "personalized-skincare-products",
+    "storage_bucket": "personalized-skincare-products.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:60727879230:android:0435ac76907015a089136f",
+        "android_client_info": {
+          "package_name": "com.example.personalizedskincareproductsrecommendation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpCB146Q7fqEGfeeoCVMJD8A_berl7Gd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

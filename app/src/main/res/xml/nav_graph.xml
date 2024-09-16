@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths></paths>
+<!--<navigation xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--    xmlns:tools="http://schemas.android.com/tools"-->
+<!--    app:startDestination="@id/.HomeFragment">-->
+
+<!--    <fragment-->
+<!--        android:id="@+id/homeFragment"-->
+<!--        android:name="com.example.app.HomeFragment"-->
+<!--        android:label="home"-->
+<!--        tools:layout="@layout/fragment_home" />-->
+
+<!--    <fragment-->
+<!--        android:id="@+id/historyFragment"-->
+<!--        android:name="com.example.app.HistoryFragment"-->
+<!--        android:label="history"-->
+<!--        tools:layout="@layout/fragment_history" />-->
+
+<!--    <fragment-->
+<!--        android:id="@+id/productsFragment"-->
+<!--        android:name="com.example.app.ProductsFragment"-->
+<!--        android:label="products"-->
+<!--        tools:layout="@layout/fragment_products" />-->
+
+<!--    <fragment-->
+<!--        android:id="@+id/accountFragment"-->
+<!--        android:name="com.example.app.AccountFragment"-->
+<!--        android:label="account"-->
+<!--        tools:layout="@layout/fragment_account" />-->
+
+<!--</navigation>-->

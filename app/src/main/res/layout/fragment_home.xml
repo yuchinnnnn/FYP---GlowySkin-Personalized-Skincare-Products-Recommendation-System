@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/frame_layout"
+    tools:context=".HomeFragment">
+
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="vertical"
+        android:padding="20dp"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/currentHour"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Good Day"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif"
+            android:textSize="18dp"/>
+
+        <TextView
+            android:id="@+id/greeting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hello, User"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif"
+            android:textSize="18dp"
+            android:textStyle="bold"/>
+
+        <ImageView
+            android:id="@+id/notification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="30dp"
+            android:maxHeight="30dp"
+            android:src="@drawable/baseline_notifications_24"
+            android:layout_gravity="right"
+            android:layout_marginTop="-35dp"/>
+
+    </LinearLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="320dp"
+        android:layout_height="250dp"
+        app:cardCornerRadius="30dp"
+        android:backgroundTint="#F1D0DC"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="80dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:text="On-board Checklist"
+            android:textColor="@color/black"
+            android:fontFamily="sans-serif"
+            android:textSize="18dp"
+            android:textStyle="bold"/>
+
+        <HorizontalScrollView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/features_frame"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:fillViewport="false"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="45dp"
+                android:padding="5dp">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="130dp"
+                    android:layout_height="180dp"
+                    android:backgroundTint="#E393A6"
+                    app:cardCornerRadius="20dp"
+                    android:layout_gravity="left"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="50dp">
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/dryskin"
+                        android:padding="10dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <TextView
+                        android:id="@+id/skinquizTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Skin Quiz"
+                        android:layout_gravity="center"
+                        android:gravity="center_horizontal"
+                        android:fontFamily="sans-serif"
+                        android:textSize="16dp"
+                        android:textStyle="bold"/>
+
+                    <Button
+                        android:id="@+id/skinquizButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="Start"
+                        android:backgroundTint="@color/black"
+                        android:gravity="center"
+                        app:cornerRadius="10dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="115dp"/>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="130dp"
+                    android:layout_height="180dp"
+                    android:backgroundTint="#E393A6"
+                    app:cardCornerRadius="20dp"
+                    android:layout_gravity="left"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="50dp">
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/folder"
+                        android:padding="10dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <TextView
+                        android:id="@+id/skinlogTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Skin Log"
+                        android:layout_gravity="center"
+                        android:gravity="center_horizontal"
+                        android:fontFamily="sans-serif"
+                        android:textSize="16dp"
+                        android:textStyle="bold"/>
+
+                    <Button
+                        android:id="@+id/skinlogButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="Start"
+                        android:backgroundTint="@color/black"
+                        android:gravity="center"
+                        app:cornerRadius="10dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="115dp"/>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="130dp"
+                    android:layout_height="180dp"
+                    android:backgroundTint="#E393A6"
+                    app:cardCornerRadius="20dp"
+                    android:layout_gravity="left"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="50dp">
+
+                    <ImageView
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:src="@drawable/facialrecognition"
+                        android:padding="10dp"
+                        android:layout_marginTop="20dp"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <TextView
+                        android:id="@+id/skinAnalysisTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Skin Analysis"
+                        android:layout_gravity="center"
+                        android:gravity="center_horizontal"
+                        android:fontFamily="sans-serif"
+                        android:textSize="16dp"
+                        android:textStyle="bold"/>
+
+                    <Button
+                        android:id="@+id/skinAnalysisButton"
+                        android:layout_width="100dp"
+                        android:layout_height="wrap_content"
+                        android:text="Start"
+                        android:backgroundTint="@color/black"
+                        android:gravity="center"
+                        app:cornerRadius="10dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="115dp"/>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:id="@+id/skingoal_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="340dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/target"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:text="Your Skin Goals"
+            android:textColor="@color/black"
+            android:textSize="14dp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/editGoal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Edit"
+            android:textSize="15dp"
+            android:textColor="#3E45E2"
+            android:textStyle="bold"
+            android:layout_marginStart="150dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/goal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="375dp"
+        android:layout_marginStart="40dp"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/skinGoals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="selected skin goals"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@+id/skingoal_layout"/>
+
+    </LinearLayout>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/skintips"
+        android:layout_width="320dp"
+        android:layout_height="150dp"
+        android:backgroundTint="#F2D5D7"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="410dp"
+        android:orientation="vertical"
+        app:cardCornerRadius="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goal">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Skin Care Tips"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_marginLeft="10dp"/>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/home_frame_layout"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/skintips">
+
+        <com.google.android.material.bottomappbar.BottomAppBar
+            android:id="@+id/bottomAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:fabCradleRoundedCornerRadius="10dp"
+            app:fabCradleMargin="15dp"
+            app:fabCradleVerticalOffset="10dp"
+            android:layout_gravity="bottom">
+            <include layout="@layout/bar_navigation" />
+        </com.google.android.material.bottomappbar.BottomAppBar>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white"
+            android:src="@drawable/baseline_add_24"
+            app:layout_anchor="@id/bottomAppBar"
+            app:maxImageSize="32dp"
+            app:fabSize="auto"
+            app:tint ="@color/black"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+</FrameLayout>

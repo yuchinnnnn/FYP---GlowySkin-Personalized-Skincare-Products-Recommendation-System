@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/home_menu"
+            android:title="Home"
+            android:icon="@drawable/baseline_home_24"
+            android:checkable="true"
+            android:orderInCategory="0"/>
+
+        <item
+            android:id="@+id/dashboard_menu"
+            android:title="Dashboard"
+            android:icon="@drawable/dashboard"
+            android:checkable="true"
+            android:orderInCategory="0"/>
+
+
+    </group>
+
+    <group android:checkableBehavior="single">
+        <item android:title="Manage">
+            <menu>
+                <item
+                    android:id="@+id/skincare_tips"
+                    android:title="Skin Care Tips"
+                    android:icon="@drawable/skin_care"
+                    android:checkable="true"
+                    android:orderInCategory="0"/>
+
+                <item
+                    android:id="@+id/manage_account"
+                    android:title="Manage User Account"
+                    android:icon="@drawable/manage_account"
+                    android:checkable="true"
+                    android:orderInCategory="0"/>
+
+                <item
+                    android:id="@+id/feedback"
+                    android:title="Feedback"
+                    android:icon="@drawable/feedback_recieved"
+                    android:checkable="true"
+                    android:orderInCategory="0"/>
+            </menu>
+        </item>
+    </group>
+
+    <group android:checkableBehavior="single">
+        <item android:title="Authentication">
+            <menu>
+                <item
+                    android:id="@+id/logout"
+                    android:title="Logout"
+                    android:icon="@drawable/logout"
+                    android:checkable="true"
+                    android:orderInCategory="0"/>
+
+                <item
+                    android:id="@+id/Account"
+                    android:title="Account"
+                    android:icon="@drawable/baseline_account_circle_24"
+                    android:checkable="true"
+                    android:orderInCategory="0"/>
+
+            </menu>
+        </item>
+    </group>
+</menu>

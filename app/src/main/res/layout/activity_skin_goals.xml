@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SkinGoals">
+
+    <LinearLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:padding="15dp"
+            android:src="@drawable/previous"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="What are your skin goals?"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="Can select more than one."
+            android:textSize="16sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="150dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/skin_goals_chip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:singleSelection="false"
+            app:chipSpacing="10dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/lessen_acne"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lessen Acne"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/lessen_wrinkles"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lessen Wrinkles"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/reduce_spots"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reduce Spots"
+                app:closeIconVisible="false"
+                app:chipBackgroundColor="@color/rose_pink"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/minimize_pores"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Minimize Pores"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/firm_skin"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Firmer Skin"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/even_skin"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="More even skin tone"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/others"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Others"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+        </com.google.android.material.chip.ChipGroup>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <LinearLayout
+        android:id="@+id/others_edittext_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="250dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/save_button">
+
+        <EditText
+            android:id="@+id/others_edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Please specify your goal"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:inputType="text" />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="80dp"
+        android:text="Save"
+        android:textSize="20sp"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

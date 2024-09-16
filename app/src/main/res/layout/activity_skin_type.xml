@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SkinType">
+
+    <LinearLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:padding="15dp"
+            android:src="@drawable/previous"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="What are your skin type?"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:textColor="@color/black"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="Select your skin types."
+            android:textSize="16sp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="150dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/skin_types_chip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:singleSelection="true"
+            app:chipSpacing="10dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/normal"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/normal_sensitive"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Normal + Sensitive"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/oily"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Oily"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/oil_sensitive"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Oily + Sensitive"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/combination"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Combination"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/combination_sensitive"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Combination + Sensitive"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/dry"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dry"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/dry_sensitive"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dry + Sensitive"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/sensitive"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensitive"
+                app:chipBackgroundColor="@color/rose_pink"
+                app:closeIconVisible="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:chipCornerRadius="5dp"/>
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="200dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="40dp"
+            android:src="@drawable/lightbulb"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Not sure what your skin type is?"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/skin_analysis_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="45dp"
+            android:text="Do the skin analysis to find out"
+            android:textColor="@color/black"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"/>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="300dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="80dp"
+        android:text="Save"
+        android:textSize="20sp"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

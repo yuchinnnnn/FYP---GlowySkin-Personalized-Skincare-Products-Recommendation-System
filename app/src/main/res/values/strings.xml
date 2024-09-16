@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">Personalized skincare products recommendation</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="select">Select Item</string>
+    <string-array name="products_category">
+        <item>Dry Skin</item>
+        <item>Oily Skin</item>
+        <item>Combination Skin</item>
+        <item>Sensitive Skin</item>
+        <item>Acne Treatment</item>
+        <item>Anti-Aging</item>
+    </string-array>
+
+    <string-array name="products_type">
+        <item>Cleanser</item>
+        <item>Toner</item>
+        <item>Serum</item>
+        <item>Moisturizer</item>
+        <item>Sunscreen</item>
+    </string-array>
+
+    <string-array name="rating_filter_options">
+        <item>All</item>
+        <item>1 star</item>
+        <item>2 stars</item>
+        <item>3 stars</item>
+        <item>4 stars</item>
+        <item>5 stars</item>
+    </string-array>
+
+    <string-array name="date_sort_options">
+        <item>Newest</item>
+        <item>Oldest</item>
+    </string-array>
+
+    <string name="navigation_open">Open navigation drawer</string>
+    <string name="navigation_close">Close navigation drawer</string>
+</resources>
