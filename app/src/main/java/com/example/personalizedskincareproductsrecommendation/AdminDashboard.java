@@ -107,6 +107,7 @@ public class AdminDashboard extends AppCompatActivity {
 
         manageUserProfile.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboard.this, AdminManageProfile.class);
+            intent.putExtra(AdminManageProfile.ARG_USER_ID, userId);
             startActivity(intent);
         });
 
@@ -114,6 +115,7 @@ public class AdminDashboard extends AppCompatActivity {
 
         viewFeedback.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboard.this, AdminViewFeedback.class);
+            intent.putExtra(AdminManageProfile.ARG_USER_ID, userId);
             startActivity(intent);
         });
 
@@ -121,6 +123,7 @@ public class AdminDashboard extends AppCompatActivity {
 
         editProducts.setOnClickListener(v -> {
             Intent intent = new Intent(AdminDashboard.this, AdminEditProducts.class);
+            intent.putExtra(AdminManageProfile.ARG_USER_ID, userId);
             startActivity(intent);
         });
 
