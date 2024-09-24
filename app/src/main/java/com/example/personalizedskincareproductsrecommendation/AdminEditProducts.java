@@ -4,7 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class AdminEditProducts extends AppCompatActivity {
+    private String userId;
+    public static final String ARG_USER_ID = "userId";
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

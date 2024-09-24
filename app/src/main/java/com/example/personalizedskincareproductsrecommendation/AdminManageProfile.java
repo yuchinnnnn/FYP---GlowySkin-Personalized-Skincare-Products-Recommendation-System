@@ -1,7 +1,10 @@
 package com.example.personalizedskincareproductsrecommendation;
 
+import static com.example.personalizedskincareproductsrecommendation.AdminDashboard.ARG_USER_ID;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -22,76 +26,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdminManageProfile extends AppCompatActivity {
+
     private String userId;
     public static final String ARG_USER_ID = "userId";
     private FirebaseAuth mAuth;
-    private ListView userList;
-    private List<Users> userListData;
-    private UserAdapter userAdapter;
     private ImageView back;
-
-    private DatabaseReference databaseReference, userReference;
+    private DatabaseReference userReference;
+    private ProfileViewPagerAdapter viewPagerAdapter;
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_manage_profile);
 
-        mAuth = FirebaseAuth.getInstance();
-        userId = getIntent().getStringExtra(ARG_USER_ID);
-
-        if (userId == null) {
-            Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("Admin").child(userId);
-
-        // back to admin dashboard
+        // Initialize back button
         back = findViewById(R.id.back);
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AdminManageProfile.this, AdminDashboard.class);
-                intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
-                startActivity(intent);
-            }
+        back.setOnClickListener(view -> {
+            Intent intent = new Intent(AdminManageProfile.this, AdminDashboard.class);
+            startActivity(intent);
         });
 
-        userList = findViewById(R.id.user_list);
+        // Initialize the ViewPager and TabLayout
+        viewPager = findViewById(R.id.viewpager);
+        tabLayout = findViewById(R.id.tab_layout);
 
-        // Initialize the list and adapter
-        userListData = new ArrayList<>();
-        userAdapter = new UserAdapter(this, userListData);
-        userList.setAdapter(userAdapter);
-
-        // Reference to Firebase "Users" node
-        userReference = FirebaseDatabase.getInstance().getReference("Users");
-
-        // Fetch the list of users from Firebase
-        fetchUsers();
+        // Set up ViewPager
+        setupViewPager(viewPager);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
-    private void fetchUsers() {
-        userReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userListData.clear();  // Clear the old list
+    private void setupViewPager(ViewPager viewPager) {
+        ProfileViewPagerAdapter adapter = new ProfileViewPagerAdapter(getSupportFragmentManager());
 
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Users user = snapshot.getValue(Users.class);
-                    userListData.add(user);  // Add user to the list
-                }
+        // Add Fragments for Active and Deactivated Users
+        adapter.addFragment(new ActiveUsers(), "Active Users");
+        adapter.addFragment(new DeactivatedUser(), "Deactivated Users");
+        adapter.addFragment(new ToApproveUser(), "To Approve Users");
 
-                // Notify adapter to update the ListView
-                userAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(AdminManageProfile.this, "Failed to load users.", Toast.LENGTH_SHORT).show();
-            }
-        });
+        viewPager.setAdapter(adapter);
     }
 }

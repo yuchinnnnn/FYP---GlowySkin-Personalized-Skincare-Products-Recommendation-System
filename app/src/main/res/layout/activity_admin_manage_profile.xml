@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             app:layout_constraintStart_toEndOf="@+id/back"
-            app:layout_constraintEnd_toStartOf="@id/add_button"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/headerLayout"
             app:layout_constraintBottom_toBottomOf="@+id/headerLayout"
             android:text="Manage User Profile"
@@ -40,25 +40,41 @@
             android:textColor="@color/black"
             android:textSize="20dp"/>
 
-        <ImageView
-            android:id="@+id/add_button"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            android:layout_marginStart="10dp"
-            app:layout_constraintStart_toEndOf="@+id/title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/headerLayout"
-            app:layout_constraintBottom_toBottomOf="@+id/headerLayout"
-            android:src="@drawable/baseline_add_24"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <ListView
-        android:id="@+id/user_list"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerLayout"
-        android:layout_marginTop="5dp"/>
+        android:isScrollContainer="true"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_active"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Active Users" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_deactivated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Deactivated Users" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_to_approve"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To Approve"/>
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/tab_layout">
+
+    </androidx.viewpager.widget.ViewPager>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
