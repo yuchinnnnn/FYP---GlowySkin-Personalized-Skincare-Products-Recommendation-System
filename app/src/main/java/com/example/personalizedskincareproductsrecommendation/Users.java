@@ -4,6 +4,9 @@ public class Users {
     private String userId;
     private String username;
     private String email;
+    private int age;
+    private String status;
+    private String skinQuizResults;
     private boolean isActive; // true for active, false for deactivated
     private boolean isPendingApproval;
 
@@ -12,7 +15,8 @@ public class Users {
         // Default constructor required for Firebase
     }
 
-    public Users(String username, String email, boolean isActive) {
+    public Users(String userId, String username, String email, boolean isActive) {
+        this.userId = userId;
         this.username = username;
         this.email = email;
         this.isActive = isActive;
@@ -40,6 +44,30 @@ public class Users {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getSkinQuizResults() {
+        return skinQuizResults;
+    }
+
+    public void setSkinQuizResults(String skinQuizResults) {
+        this.skinQuizResults = skinQuizResults;
     }
 
     public boolean isActive() {

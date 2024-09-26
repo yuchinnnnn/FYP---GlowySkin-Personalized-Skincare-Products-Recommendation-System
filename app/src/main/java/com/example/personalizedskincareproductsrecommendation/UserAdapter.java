@@ -2,6 +2,7 @@ package com.example.personalizedskincareproductsrecommendation;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,21 +49,28 @@ public class UserAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.users_profile_list, parent, false);
         }
 
+        // Initialize your UI components for each list item
         TextView usernameField = convertView.findViewById(R.id.username_field);
         TextView emailField = convertView.findViewById(R.id.email_field);
-//        ImageView deactivate = convertView.findViewById(R.id.deactivate_button);
+        ConstraintLayout listLayout = convertView.findViewById(R.id.userProfileLayout);  // Assuming you have this layout in users_profile_list.xml
 
+        // Get the current user from the list
         Users user = userList.get(position);
 
+        // Set the data for the current user
         usernameField.setText("Username: " + user.getUsername());
         emailField.setText("Email: " + user.getEmail());
 
+        // Set an onClickListener for the user item
         listLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle click event here
+                // Create an Intent to navigate to the AdminViewUserProfile activity
                 Intent intent = new Intent(context, AdminViewUserProfile.class);
-                intent.putExtra(AdminManageProfile.ARG_USER_ID, user.getUserId());
+                // Pass the user ID
+                String userId = user.getUserId();
+                Log.d("UserAdapter", "Navigating to profile with userId: " + userId);
+                intent.putExtra(AdminViewUserProfile.ARG_USER_ID, userId);
                 context.startActivity(intent);
             }
         });

@@ -1,9 +1,11 @@
 package com.example.personalizedskincareproductsrecommendation;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -43,6 +45,23 @@ public class ToApproveUser extends Fragment {
 
         // Fetch users to approve
         fetchUsersToApprove();
+
+//        approveUserList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Users selectedUser = approveUserListData.get(position);
+//
+//                // Start the AdminViewUserProfile activity and pass user data via Intent
+//                Intent intent = new Intent(getContext(), AdminViewUserProfile.class);
+//                intent.putExtra("username", selectedUser.getUsername());
+//                intent.putExtra("email", selectedUser.getEmail());
+//                intent.putExtra("age", selectedUser.getAge());
+//                intent.putExtra("status", selectedUser.getStatus());
+//                intent.putExtra("skinQuizResults", selectedUser.getSkinQuizResults());
+//
+//                startActivity(intent);
+//            }
+//        });
 
         return view;
     }
