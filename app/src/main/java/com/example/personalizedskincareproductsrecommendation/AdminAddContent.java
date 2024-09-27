@@ -32,13 +32,17 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AdminAddContent extends AppCompatActivity {
     private ImageView back, uploadedImage;
     private EditText title, description;
     private Button uploadImageButton, saveButton, cancelButton;
+    private List<Uri> uploadedImages = new ArrayList<>();
+
     private DatabaseReference databaseReference, skincareTipsDatabaseReference;
     private FirebaseAuth mAuth;
     private String userId;
@@ -52,13 +56,25 @@ public class AdminAddContent extends AppCompatActivity {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        imageUri = result.getData().getData();
-                        uploadedImage.setImageURI(imageUri);  // Preview the selected image
+                        uploadedImages.clear(); // Create a List<Uri> uploadedImages to store image Uris
+                        if (result.getData().getClipData() != null) {
+                            int count = result.getData().getClipData().getItemCount();
+                            for (int i = 0; i < count; i++) {
+                                Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
+                                uploadedImages.add(imageUri); // Add each image Uri to the list
+                            }
+                        } else if (result.getData().getData() != null) {
+                            Uri imageUri = result.getData().getData();
+                            uploadedImages.add(imageUri); // If a single image was selected
+                        }
+                        // Display the first image or show a count of selected images
+                        if (!uploadedImages.isEmpty()) {
+                            uploadedImage.setImageURI(uploadedImages.get(0)); // Show the first image as a preview
+                        }
                     }
                 }
             }
     );
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,11 +136,12 @@ public class AdminAddContent extends AppCompatActivity {
 
     private void showUploadImageDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Image");
+        builder.setTitle("Select Images");
         builder.setPositiveButton("Yes", (dialog, which) -> {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); // Allow multiple selections
             intent.setType("image/*");
-            activityResultLauncher.launch(Intent.createChooser(intent, "Select Image"));
+            activityResultLauncher.launch(Intent.createChooser(intent, "Select Images"));
         });
         builder.setNegativeButton("No", (dialog, which) -> dialog.cancel());
         builder.show();
@@ -181,66 +198,49 @@ public class AdminAddContent extends AppCompatActivity {
             tipsData.put("tipsDescription", tipsDescription);
             tipsData.put("userId", userId);  // Add userId of the admin who uploads the tips
 
-            databaseReference.child("Admin").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    String username = snapshot.child("username").getValue(String.class);
-                    if (username != null) {
-                        tipsData.put("username", username);  // Add the username of the admin
-                    }
-
-                    // Save the tips data under the unique key in the "SkincareTips" node
-                    skincareTipsDatabaseReference.child(tipId).updateChildren(tipsData)
-                            .addOnCompleteListener(task -> {
-                                if (task.isSuccessful()) {
-                                    Toast.makeText(AdminAddContent.this, "Content saved successfully", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
-                                    intent.putExtra("userId", userId);
-                                    startActivity(intent);
-                                    if (imageUri != null) {
-                                        // Upload the image and link it with the tipId
-                                        uploadContentPhoto(tipId);
-                                    }
-                                } else {
-                                    Toast.makeText(AdminAddContent.this, "Failed to save content", Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(AdminAddContent.this, "Failed to retrieve username", Toast.LENGTH_SHORT).show();
-                }
-            });
+            // Save the tips data under the unique key in the "SkincareTips" node
+            skincareTipsDatabaseReference.child(tipId).updateChildren(tipsData)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(AdminAddContent.this, "Content saved successfully", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+                            intent.putExtra("userId", userId);
+                            startActivity(intent);
+                            uploadContentPhotos(tipId); // Upload the selected images
+                        } else {
+                            Toast.makeText(AdminAddContent.this, "Failed to save content", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         }
     }
 
+    private void uploadContentPhotos(String tipId) {
+        if (uploadedImages.isEmpty()) return; // Check if the list is empty
 
-    private void uploadContentPhoto(String tipId) {
-        if (imageUri == null) return;
+        // Loop through all the selected images
+        for (Uri imageUri : uploadedImages) {
+            // Create a unique reference for each image using the tipId and timestamp
+            String imageName = tipId + "_" + System.currentTimeMillis() + "_skincare_tips_image.jpg";
+            StorageReference photoRef = storageReference.child(imageName);
 
-        // Create a unique reference for each image using the tipId
-        StorageReference photoRef = storageReference.child(tipId + "_skincare_tips_image.jpg");
-        UploadTask uploadTask = photoRef.putFile(imageUri);
-
-        uploadTask.addOnSuccessListener(taskSnapshot -> {
-            // Get the download URL of the uploaded image
-            photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                // Save the image URL under the corresponding tipId in the "SkincareTips" node
-                skincareTipsDatabaseReference.child(tipId).child("imageUrl").setValue(uri.toString())
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(AdminAddContent.this, "Image uploaded and URL saved successfully", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(AdminAddContent.this, "Failed to save image URL", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+            UploadTask uploadTask = photoRef.putFile(imageUri);
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                // Get the download URL of the uploaded image
+                photoRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                    // Save the image URL under the corresponding tipId in the "SkincareTips" node
+                    skincareTipsDatabaseReference.child(tipId).child("images").push().setValue(uri.toString())
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "Image uploaded and URL saved successfully: " + uri.toString());
+                                } else {
+                                    Log.e(TAG, "Failed to save image URL: " + task.getException().getMessage());
+                                }
+                            });
+                });
+            }).addOnFailureListener(e -> {
+                Log.e(TAG, "Failed to upload image: " + e.getMessage());
             });
-        }).addOnFailureListener(e -> {
-            Toast.makeText(AdminAddContent.this, "Failed to upload image", Toast.LENGTH_SHORT).show();
-        });
+        }
     }
-
-
 
 }
