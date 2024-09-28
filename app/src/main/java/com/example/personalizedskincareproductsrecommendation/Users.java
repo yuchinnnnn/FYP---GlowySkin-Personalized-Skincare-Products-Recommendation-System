@@ -1,12 +1,8 @@
 package com.example.personalizedskincareproductsrecommendation;
 
 public class Users {
-    private String userId;
-    private String username;
-    private String email;
+    private String userId, username, email, status, skinQuizResults;
     private int age;
-    private String status;
-    private String skinQuizResults;
     private boolean isActive; // true for active, false for deactivated
     private boolean isPendingApproval;
 

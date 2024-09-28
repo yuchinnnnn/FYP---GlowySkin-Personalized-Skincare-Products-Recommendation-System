@@ -55,6 +55,8 @@ dependencies {
     implementation ("com.github.f0ris.sweetalert:library:1.5.6")
     implementation ("com.squareup.picasso:picasso:2.8")
     implementation ("com.google.firebase:firebase-storage:20.0.1")
+    implementation ("androidx.drawerlayout:drawerlayout:1.0.0")
+
 
     // for password encryption
     implementation ("org.mindrot:jbcrypt:0.4")
