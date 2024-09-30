@@ -16,12 +16,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,17 +38,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+import android.widget.ArrayAdapter;
 public class AdminAddContent extends AppCompatActivity {
-    private ImageView back, uploadedImage;
-    private EditText title, description;
-    private Button uploadImageButton, saveButton, cancelButton;
-    private List<Uri> uploadedImages = new ArrayList<>();
-
-    private DatabaseReference databaseReference, skincareTipsDatabaseReference;
     private FirebaseAuth mAuth;
     private String userId;
     public static final String ARG_USER_ID = "userId";
+    private AutoCompleteTextView categoryDropdown; // category dropdown
+    private ImageView back, uploadedImage;
+    private TextInputEditText title, description;
+    private Button uploadImageButton, uploadButton, cancelButton;
+    private List<Uri> uploadedImages = new ArrayList<>();
+
+    private DatabaseReference databaseReference, skincareTipsDatabaseReference;
+
 
     StorageReference storageReference;
     Uri imageUri;
@@ -70,6 +78,7 @@ public class AdminAddContent extends AppCompatActivity {
                         // Display the first image or show a count of selected images
                         if (!uploadedImages.isEmpty()) {
                             uploadedImage.setImageURI(uploadedImages.get(0)); // Show the first image as a preview
+                            Toast.makeText(AdminAddContent.this, uploadedImages.size() + " images selected.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -105,8 +114,19 @@ public class AdminAddContent extends AppCompatActivity {
 
         skincareTipsDatabaseReference = FirebaseDatabase.getInstance().getReference("SkincareTips");
 
-        title = findViewById(R.id.tipTitle);
-        description = findViewById(R.id.tipDescription);
+        categoryDropdown = findViewById(R.id.hint_text);
+        // Define the list of categories (hardcoded or retrieved from database)
+        String[] categories = new String[] {"For All Skin Type", "For Oily Skin", "For Dry Skin", "For Combination Skin", "For Sensitive Skin"};
+
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories);
+
+        // Set the adapter to the AutoCompleteTextView
+        categoryDropdown.setAdapter(adapter);
+        String selectedCategory = categoryDropdown.getText().toString();
+
+        title = findViewById(R.id.title);
+        description = findViewById(R.id.description);
         uploadedImage = findViewById(R.id.uploadedImage);
 
         uploadImageButton = findViewById(R.id.uploadImageButton);
@@ -114,10 +134,18 @@ public class AdminAddContent extends AppCompatActivity {
         loadUploadedImage(userId);
 
 
-        saveButton = findViewById(R.id.btnSave);
-        saveButton.setOnClickListener(v -> {
+        uploadButton = findViewById(R.id.UploadButton);
+        uploadButton.setOnClickListener(v -> {
             String titleText = title.getText().toString().trim();
             String descriptionText = description.getText().toString().trim();
+            String category = categoryDropdown.getText().toString().trim(); // Get category
+
+            // Validate input fields
+            if (category.isEmpty()) {
+                categoryDropdown.setError("Category is required");
+                categoryDropdown.requestFocus();
+                return;
+            }
             if (titleText.isEmpty()) {
                 title.setError("Title is required");
                 title.requestFocus();
@@ -128,10 +156,14 @@ public class AdminAddContent extends AppCompatActivity {
                 description.requestFocus();
                 return;
             }
-            saveContent(titleText, descriptionText);
+
+            // Save the content
+            saveContent(selectedCategory, titleText, descriptionText);
+            showConfirmationDialog();
+
         });
 
-        cancelButton = findViewById(R.id.btnCancel);
+        cancelButton = findViewById(R.id.CancelButton);
     }
 
     private void showUploadImageDialog() {
@@ -145,6 +177,26 @@ public class AdminAddContent extends AppCompatActivity {
         });
         builder.setNegativeButton("No", (dialog, which) -> dialog.cancel());
         builder.show();
+    }
+
+    private void showConfirmationDialog() {
+        SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(AdminAddContent.this, SweetAlertDialog.SUCCESS_TYPE);
+        sweetAlertDialog.setTitle("Upload Successful");
+        sweetAlertDialog.setContentText("Your content has been uploaded successfully.");
+        sweetAlertDialog.setConfirmText("OK");
+        sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                sDialog.dismissWithAnimation();
+                Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+                intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
+                startActivity(intent);
+            }
+        });
+        sweetAlertDialog.show();
+        title.setText("");
+        description.setText("");
+        uploadedImage.setImageResource(R.drawable.skin_care); // Reset image preview
     }
 
     private void loadUploadedImage(String userId) {
@@ -164,12 +216,12 @@ public class AdminAddContent extends AppCompatActivity {
                     } else {
                         Log.d(TAG, "Skincare tips photo URL is null.");
                         // Load a default image if profile photo URL is null
-                        uploadedImage.setImageResource(R.drawable.skin_care); // Set your default image here
+                        uploadedImage.setImageResource(R.drawable.baseline_image_24); // Set your default image here
                     }
                 } else {
                     Log.d(TAG, "No profile photo URL found.");
                     // Load a default image if the URL doesn't exist
-                    uploadedImage.setImageResource(R.drawable.skin_care); // Set your default image here
+                    uploadedImage.setImageResource(R.drawable.baseline_image_24); // Set your default image here
                 }
             }
 
@@ -177,26 +229,34 @@ public class AdminAddContent extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Failed to load skincare tips photo URL: " + error.getMessage());
                 // Load a default image in case of error
-                uploadedImage.setImageResource(R.drawable.skin_care); // Set your default image here
+                uploadedImage.setImageResource(R.drawable.baseline_image_24); // Set your default image here
             }
         });
     }
 
-    private void saveContent(String tipsTitle, String tipsDescription) {
+    private void saveContent(String tipsCategory, String tipsTitle, String tipsDescription) {
         if (TextUtils.isEmpty(tipsTitle) || TextUtils.isEmpty(tipsDescription)) {
             Toast.makeText(AdminAddContent.this, "Invalid input data", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Get current date and time
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = now.format(formatter); // e.g., 2023-09-28 14:30:15
+
         // Generate a unique key for each skincare tip
         String tipId = skincareTipsDatabaseReference.push().getKey();
 
         if (tipId != null) {
-            // Prepare the data to save, including the userId
+            // Prepare the data to save, including the userId and current date/time
             Map<String, Object> tipsData = new HashMap<>();
-            tipsData.put("tipsTitle", tipsTitle);
-            tipsData.put("tipsDescription", tipsDescription);
+            tipsData.put("id", tipId);
+            tipsData.put("category", tipsCategory); // Save the category
+            tipsData.put("title", tipsTitle);
+            tipsData.put("description", tipsDescription);
             tipsData.put("userId", userId);  // Add userId of the admin who uploads the tips
+            tipsData.put("uploadDateTime", formattedDateTime); // Store current date/time
 
             // Save the tips data under the unique key in the "SkincareTips" node
             skincareTipsDatabaseReference.child(tipId).updateChildren(tipsData)

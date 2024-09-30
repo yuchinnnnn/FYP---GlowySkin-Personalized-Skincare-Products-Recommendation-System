@@ -24,7 +24,7 @@
             <menu>
                 <item
                     android:id="@+id/skincare_tips"
-                    android:title="Skin Care Tips"
+                    android:title="Manage Content"
                     android:icon="@drawable/skin_care"
                     android:checkable="true"
                     android:orderInCategory="0"/>

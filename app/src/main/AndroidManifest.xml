@@ -24,7 +24,10 @@
         android:theme="@style/Theme.PersonalizedSkincareProductsRecommendation"
         tools:targetApi="31">
         <activity
-            android:name=".TestDrawer"
+            android:name=".AdminEditContent"
+            android:exported="false" />
+        <activity
+            android:name=".AdminManageContent"
             android:exported="false" />
         <activity
             android:name=".AdminViewUserProfile"

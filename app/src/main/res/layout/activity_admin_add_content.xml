@@ -33,64 +33,69 @@
 
     </LinearLayout>
 
-    <!-- Skincare Tip Title Input -->
-    <TextView
-        android:id="@+id/titleLabel"
-        android:layout_width="wrap_content"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/dropdown"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="20dp"
-        android:text="Tip Title"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerLayout"
-        app:layout_constraintBottom_toTopOf="@id/tipTitle" />
+        android:layout_margin="16dp"
+        android:hint="Select"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
-    <EditText
-        android:id="@+id/tipTitle"
-        android:layout_width="0dp"
+        <AutoCompleteTextView
+            android:id="@+id/hint_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Select a Category"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/title_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:hint="Enter title"
-        android:textSize="16sp"
-        android:inputType="textCapSentences"
+        app:boxStrokeWidth="2dp"
+        app:boxStrokeErrorColor="#FF0000"
+        app:layout_constraintTop_toBottomOf="@+id/dropdown"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleLabel"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="10dp"
+        app:endIconCheckable="true"
+        android:hint="Title"
+        app:endIconMode="clear_text"
+        app:endIconTint="@color/black">
 
-    <!-- Skincare Tip Description Input -->
-    <TextView
-        android:id="@+id/descriptionLabel"
-        android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_height="60dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
+        android:id="@+id/description_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:text="Tip Description"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
+        app:boxStrokeWidth="2dp"
+        app:boxStrokeErrorColor="#FF0000"
+        app:layout_constraintTop_toBottomOf="@+id/title_layout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tipTitle"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="10dp"
+        android:hint="Description"
+        app:endIconMode="clear_text">
 
-    <EditText
-        android:id="@+id/tipDescription"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:hint="Enter detailed description"
-        android:textSize="16sp"
-        android:inputType="textMultiLine"
-        android:minLines="4"
-        android:maxLines="6"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/descriptionLabel"
-        android:layout_marginTop="8dp" />
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/description"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
 
-    <!-- Image Upload Section -->
+    </com.google.android.material.textfield.TextInputLayout>
+
     <TextView
         android:id="@+id/imageLabel"
         android:layout_width="wrap_content"
@@ -101,7 +106,7 @@
         android:textStyle="bold"
         android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tipDescription"
+        app:layout_constraintTop_toBottomOf="@id/description_layout"
         android:layout_marginTop="16dp" />
 
     <ImageView
@@ -114,8 +119,7 @@
         android:contentDescription="Uploaded Image"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/imageLabel"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/border"/>
+        android:layout_marginTop="8dp"/>
 
     <Button
         android:id="@+id/uploadImageButton"
@@ -142,19 +146,19 @@
         android:layout_marginTop="24dp">
 
         <Button
-            android:id="@+id/btnSave"
+            android:id="@+id/UploadButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_weight="1"
-            android:text="Save"
+            android:text="Upload"
             android:textColor="@color/black"
             android:textAllCaps="false"
             android:backgroundTint="@color/pink"
             android:layout_marginEnd="8dp" />
 
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/CancelButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"

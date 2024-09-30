@@ -3,7 +3,6 @@ package com.example.personalizedskincareproductsrecommendation;
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -14,7 +13,6 @@ import androidx.viewpager.widget.ViewPager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -202,8 +200,8 @@ public class AdminDashboard extends AppCompatActivity {
                 openActivity(AdminViewDashboard.class);
                 break;
             case R.id.skincare_tips:
-                Log.d("AdminDashboard", "Skin Care Tips clicked");
-                openActivity(AdminAddContent.class);
+                Log.d("AdminDashboard", "Manage Content clicked");
+                openActivity(AdminManageContent.class);
                 break;
             case R.id.manage_account:
                 Log.d("AdminDashboard", "Manage User Account clicked");
