@@ -5,37 +5,8 @@
     android:layout_height="wrap_content"
     android:padding="8dp">
 
-    <LinearLayout
-        android:id="@+id/headerLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="top"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        app:layout_constraintEnd_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/back"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/previous"
-            android:clickable="true"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="View Feedbacks"
-            android:gravity="center_horizontal"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:textSize="20dp"/>
-
-    </LinearLayout>
-
-    <!-- User Name -->
     <TextView
-        android:id="@+id/userName"
+        android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_marginEnd="40dp"
         android:layout_height="wrap_content"
@@ -45,7 +16,7 @@
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerLayout"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <ImageView
         android:id="@+id/reply"
@@ -55,37 +26,34 @@
         android:clickable="true"
         android:tooltipText="Reply"
         android:src="@drawable/reply"
-        app:layout_constraintStart_toEndOf="@id/userName"
-        app:layout_constraintTop_toTopOf="@id/userName"
-        app:layout_constraintBottom_toBottomOf="@+id/userName"/>
+        app:layout_constraintStart_toEndOf="@id/username"
+        app:layout_constraintTop_toTopOf="@id/username"
+        app:layout_constraintBottom_toBottomOf="@+id/username"/>
 
-    <!-- User Rating (Stars) -->
     <RatingBar
-        android:id="@+id/userRatingBar"
+        android:id="@+id/rating"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:numStars="5"
         android:rating="4.5"
         android:isIndicator="true"
-        app:layout_constraintTop_toBottomOf="@id/userName"
+        app:layout_constraintTop_toBottomOf="@id/username"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="4dp" />
 
-    <!-- Feedback Date -->
     <TextView
-        android:id="@+id/feedbackDate"
+        android:id="@+id/date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="June 23, 2024"
         android:textSize="14sp"
         android:textColor="@color/grey"
-        app:layout_constraintTop_toBottomOf="@id/userRatingBar"
+        app:layout_constraintTop_toBottomOf="@id/rating"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="4dp" />
 
-    <!-- Feedback Comment -->
     <TextView
-        android:id="@+id/userComment"
+        android:id="@+id/feedback"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="40dp"
@@ -94,9 +62,7 @@
         android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/feedbackDate"
+        app:layout_constraintTop_toBottomOf="@id/date"
         android:layout_marginTop="8dp" />
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

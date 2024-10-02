@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MorningReminder">
+    tools:context=".EditProfile">
 
     <LinearLayout
         android:id="@+id/title"
@@ -102,17 +102,17 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginTop="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
                 android:text="Username"
                 android:textColor="@color/black"
-                android:textSize="16sp"
-                android:layout_centerVertical="true"
-                android:layout_alignParentStart="true" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/username_text"
@@ -123,22 +123,22 @@
                 android:gravity="right"
                 android:text="your name"
                 android:textColor="@color/black"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
 
             <ImageView
                 android:id="@+id/username"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
-                android:src="@drawable/go_right"
-                android:layout_marginStart="10dp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"/>
+                android:layout_centerVertical="true"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/go_right" />
 
             <View
                 android:layout_width="370dp"
                 android:layout_height="2dp"
-                android:background="#D9D9D9"
-                android:layout_marginTop="70dp"/>
+                android:layout_marginTop="70dp"
+                android:background="#D9D9D9" />
 
         </RelativeLayout>
 
@@ -166,15 +166,6 @@
                 android:text="your email"
                 android:textColor="@color/black"
                 android:textSize="16sp"/>
-
-<!--            <ImageView-->
-<!--                android:id="@+id/email"-->
-<!--                android:layout_width="20dp"-->
-<!--                android:layout_height="20dp"-->
-<!--                android:src="@drawable/go_right"-->
-<!--                android:layout_marginStart="10dp"-->
-<!--                android:layout_alignParentEnd="true"-->
-<!--                android:layout_centerVertical="true"/>-->
 
             <View
                 android:layout_width="370dp"

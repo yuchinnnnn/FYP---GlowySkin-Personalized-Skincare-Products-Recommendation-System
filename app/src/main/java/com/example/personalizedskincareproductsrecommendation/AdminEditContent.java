@@ -79,7 +79,7 @@ public class AdminEditContent extends AppCompatActivity {
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(AdminEditContent.this, AdminDashboard.class);
+                Intent intent = new Intent(AdminEditContent.this, AdminManageContent.class);
                 intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
                 startActivity(intent);
             }

@@ -45,6 +45,7 @@ public class AdminManageProfile extends AppCompatActivity {
         back = findViewById(R.id.back);
         back.setOnClickListener(view -> {
             Intent intent = new Intent(AdminManageProfile.this, AdminDashboard.class);
+            intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
             startActivity(intent);
         });
 

@@ -35,13 +35,12 @@ public class AdminManageContent extends AppCompatActivity {
     private List<Content> contentList;
     private List<Content> filteredContentList;
     private AutoCompleteTextView search;
-
     private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_admin_manage_skincare_tips);
+        setContentView(R.layout.activity_admin_manage_content);
 
         userId = getIntent().getStringExtra(ARG_USER_ID);
 

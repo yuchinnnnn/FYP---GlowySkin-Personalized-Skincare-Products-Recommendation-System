@@ -66,14 +66,6 @@ public class Users {
         this.skinQuizResults = skinQuizResults;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
-    }
-
     public boolean isPendingApproval() {
         return isPendingApproval;
     }

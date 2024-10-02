@@ -77,7 +77,7 @@ dependencies {
 
     // For chart usage
 //    implementation ("com.github.AnyChart:AnyChart-Android:1.1.5")
-//    implementation ("com.github.PhilJay:MPAndroidChart:v3.0.3")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.0.3")
 //    implementation ("com.github.anyChart:AnyChart-Android:1.1.2")
 //    implementation("android:multidex:multidex:2.0.1")
 

@@ -110,7 +110,7 @@ public class AdminDashboard extends AppCompatActivity {
         viewFeedback.setOnClickListener(v -> openActivity(AdminViewFeedback.class));
 
         editProducts = findViewById(R.id.edit_product);
-        editProducts.setOnClickListener(v -> openActivity(AdminEditProducts.class));
+        editProducts.setOnClickListener(v -> openActivity(AdminManageProducts.class));
     }
 
     private void openActivity(Class<?> activityClass) {
