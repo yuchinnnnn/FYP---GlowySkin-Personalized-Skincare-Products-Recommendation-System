@@ -22,6 +22,8 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.personalizedskincareproductsrecommendation.HomeFragment;
 import com.example.personalizedskincareproductsrecommendation.R;
@@ -45,7 +47,11 @@ public class ProductsFragment extends Fragment {
     private AutoCompleteTextView hintText;
     private ImageView back, filter;
     private ArrayAdapter<String> adapter;
-    private String userId;
+    private String userId, userSkinType, selectedCategories, selectedTypes;
+    private RecyclerView suggestedProductsRecyclerView;
+    private SuggestedProductAdapter suggestedProductAdapter;
+    private ArrayList<Product> suggestedProductList;
+
 
     private static final String ARG_USER_ID = "userId";
 
@@ -71,7 +77,7 @@ public class ProductsFragment extends Fragment {
         products_category = view.findViewById(R.id.dropdown);
         hintText = view.findViewById(R.id.hint_text);
 
-        back = view.findViewById(R.id.back_button);
+        back = view.findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,12 +105,66 @@ public class ProductsFragment extends Fragment {
         productAdapter = new ProductAdapter(getContext(), productList);
         productListView.setAdapter(productAdapter);
 
+        // Initialize the RecyclerView for suggested products
+        suggestedProductsRecyclerView = view.findViewById(R.id.suggested_products_recycler_view);
+        suggestedProductList = new ArrayList<>();
+        suggestedProductAdapter = new SuggestedProductAdapter(getContext(), suggestedProductList);
+
+// Set LayoutManager for the RecyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+        suggestedProductsRecyclerView.setLayoutManager(layoutManager);
+        suggestedProductsRecyclerView.setAdapter(suggestedProductAdapter);
+
+// Fetch suggested products from Firestore
+        fetchSuggestedProducts();
+
+
         // Fetch products from Firestore and populate the AutoCompleteTextView
         fetchProductsForAutocomplete();
         fetchProducts();
 
         return view;
     }
+
+    private void fetchSuggestedProducts() {
+        db.collection("skincare_products")
+                .whereEqualTo("skinType", userSkinType)  // Filter products by the user's skin type
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        suggestedProductList.clear();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Product product = document.toObject(Product.class);
+
+                            if (document.contains("name")) {
+                                String brand = document.getString("brand");
+                                String name = document.getString("name");
+                                String productCategory = document.getString("function");  // Assuming 'function' is the category
+                                String productType = document.getString("type");
+
+                                product.setBrand(brand);
+                                product.setName(name);
+
+                                // Ensure that selectedCategories and selectedTypes are not null or empty
+                                boolean matchesCategory = selectedCategories == null || selectedCategories.isEmpty() || selectedCategories.contains(productCategory);
+                                boolean matchesType = selectedTypes == null || selectedTypes.isEmpty() || selectedTypes.contains(productType);
+
+                                // Add the product to the list if it matches either the category or the type
+                                if (matchesCategory && matchesType) {  // Use && for both filters, or || if matching either is enough
+                                    suggestedProductList.add(product);
+                                    Log.d(TAG, "Added Suggested Product: " + name);
+                                }
+                            }
+                        }
+
+                        // Notify the adapter of the updated list
+                        suggestedProductAdapter.notifyDataSetChanged();
+                    } else {
+                        Log.w(TAG, "Error getting suggested products.", task.getException());
+                    }
+                });
+    }
+
 
     private void fetchProductsForAutocomplete() {
         db.collection("skincare_products")
@@ -163,6 +223,27 @@ public class ProductsFragment extends Fragment {
                         productAdapter.notifyDataSetChanged();
                     } else {
                         Log.w(TAG, "Error getting documents.", task.getException());
+                    }
+                });
+    }
+
+    // Fetch the user's skin type based on the userId
+    private void fetchUserSkinType() {
+        db.collection("Users").document(userId)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().exists() && task.getResult().contains("skinType")) {
+                            userSkinType = task.getResult().getString("skinType");
+                            Log.d(TAG, "User skin type: " + userSkinType);
+
+                            // Fetch the suggested products after retrieving skin type
+                            fetchSuggestedProducts();
+                        } else {
+                            Log.w(TAG, "User skin type not found.");
+                        }
+                    } else {
+                        Log.w(TAG, "Error getting user skin type.", task.getException());
                     }
                 });
     }
@@ -246,14 +327,15 @@ public class ProductsFragment extends Fragment {
         builder.show();
     }
 
-    private void filterProductsByCategoryAndType(ArrayList<String> selectedCategories, ArrayList<String> selectedType) {
+    private void filterProductsByCategoryAndType(ArrayList<String> selectedCategories, ArrayList<String> selectedTypes) {
         ArrayList<Product> filteredList = new ArrayList<>();
 
         for (Product product : productList) {
             boolean matchesCategory = selectedCategories.isEmpty() || selectedCategories.contains(product.getFunction());
-            boolean matchesType = selectedType.isEmpty() || selectedType.contains(product.getType());
+            boolean matchesType = selectedTypes.isEmpty() || selectedTypes.contains(product.getType());
+            boolean matchesSkinType = product.getSkinType().equals(userSkinType);  // Make sure product skin type matches user's
 
-            if (matchesCategory && matchesType) {
+            if (matchesCategory && matchesType && matchesSkinType) {
                 filteredList.add(product);
             }
         }
@@ -261,11 +343,11 @@ public class ProductsFragment extends Fragment {
         productAdapter.updateProductList(filteredList);
     }
 
+
     public void backHomepage() {
         HomeFragment homeFragment = HomeFragment.newInstance(userId);
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, homeFragment)
-                .addToBackStack(null)  // Add this if you want to add the transaction to the back stack
                 .commit();
     }
 

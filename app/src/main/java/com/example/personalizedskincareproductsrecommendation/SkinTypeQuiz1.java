@@ -25,6 +25,7 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
     private String userId;
     private String selectedSkinType;
     private String existingSkinType;
+    private boolean isLoadedFromDatabase = false; // New flag
 
     private static final String ARG_USER_ID = "userId";
     private static final String ARG_SELECTED_SKIN_TYPE = "selectedSkinType";
@@ -61,7 +62,7 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
         oil.setOnClickListener(v -> selectSkinType("Oil", oil));
 
         next.setOnClickListener(v -> {
-            if (selectedSkinType != null) {
+            if (selectedSkinType != null) { // If user selected a new skin type
                 if (existingSkinType != null && !selectedSkinType.equals(existingSkinType)) {
                     new SweetAlertDialog(SkinTypeQuiz1.this, SweetAlertDialog.WARNING_TYPE)
                             .setTitleText("Confirm Change")
@@ -77,8 +78,13 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
                 } else {
                     updateSkinTypeInDatabase();
                 }
+            } else if (existingSkinType != null) { // If user didn't make changes but has an existing answer
+                Intent intent = new Intent(SkinTypeQuiz1.this, SkinTypeQuiz2.class);
+                intent.putExtra(ARG_USER_ID, userId);
+                intent.putExtra(ARG_SELECTED_SKIN_TYPE, existingSkinType); // Pass existing answer
+                startActivity(intent);
             } else {
-                Toast.makeText(SkinTypeQuiz1.this, "Please select an answer", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SkinTypeQuiz1.this, "Please select an answer", Toast.LENGTH_SHORT).show(); // No selection and no existing answer
             }
         });
 
@@ -91,6 +97,7 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
     }
 
     private void loadExistingSkinType() {
+        isLoadedFromDatabase = true; // Set the flag before loading data
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -99,19 +106,20 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
                     // Highlight the previously selected skin type
                     switch (existingSkinType) {
                         case "Dry":
-                            selectSkinType("It feels dry and flakey sometimes irritated", dry);
+                            highlightSkinType(dry);
                             break;
                         case "Normal":
-                            selectSkinType("It feels same as in the morning, great!", normal);
+                            highlightSkinType(normal);
                             break;
                         case "Combination":
-                            selectSkinType("Dry cheeks, but nose and forehead are shiny", combination);
+                            highlightSkinType(combination);
                             break;
                         case "Oil":
-                            selectSkinType("My skin becomes shiny throughout the day", oil);
+                            highlightSkinType(oil);
                             break;
                     }
                 }
+                isLoadedFromDatabase = false; // Reset the flag after data is loaded
             }
 
             @Override
@@ -122,13 +130,19 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
     }
 
     private void selectSkinType(String skinType, LinearLayout selectedLayout) {
+        if (!isLoadedFromDatabase) {  // Only update selectedSkinType if the user made a selection
+            selectedSkinType = skinType;
+        }
+        highlightSkinType(selectedLayout);
+    }
+
+    private void highlightSkinType(LinearLayout selectedLayout) {
         dry.setBackgroundColor(getResources().getColor(R.color.light_grey));
         normal.setBackgroundColor(getResources().getColor(R.color.light_grey));
         combination.setBackgroundColor(getResources().getColor(R.color.light_grey));
         oil.setBackgroundColor(getResources().getColor(R.color.light_grey));
 
         selectedLayout.setBackgroundColor(getResources().getColor(R.color.pink));
-        selectedSkinType = skinType;
     }
 
     private void updateSkinTypeInDatabase() {
@@ -145,3 +159,4 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
                 });
     }
 }
+

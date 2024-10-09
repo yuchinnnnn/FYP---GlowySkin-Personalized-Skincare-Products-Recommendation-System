@@ -65,8 +65,8 @@ public class SkinTypeQuiz3 extends AppCompatActivity {
         });
 
         next.setOnClickListener(v -> {
-            if (selectedReaction != null) {
-                if (!selectedReaction.equals(existingReaction)) {
+            if (selectedReaction != null) { // If user selected a new skin type
+                if (existingReaction != null && !selectedReaction.equals(existingReaction)) {
                     new SweetAlertDialog(SkinTypeQuiz3.this, SweetAlertDialog.WARNING_TYPE)
                             .setTitleText("Confirm Change")
                             .setContentText("Are you sure you want to change your answer?")
@@ -74,15 +74,20 @@ public class SkinTypeQuiz3 extends AppCompatActivity {
                             .setCancelText("No, keep it")
                             .setConfirmClickListener(sDialog -> {
                                 sDialog.dismissWithAnimation();
-                                updateReactionInDatabase();
+                                updateSelection();
                             })
                             .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
                             .show();
                 } else {
-                    proceedToNextQuiz();
+                    updateReactionInDatabase();
                 }
+            } else if (existingReaction != null) {
+                Intent intent = new Intent(SkinTypeQuiz3.this, SkinTypeQuiz2.class);
+                intent.putExtra(ARG_USER_ID, userId);
+                intent.putExtra(ARG_SELECTED_SKIN_TYPE, existingReaction);
+                startActivity(intent);
             } else {
-                Toast.makeText(SkinTypeQuiz3.this, "Please select an answer", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SkinTypeQuiz3.this, "Please select an answer", Toast.LENGTH_SHORT).show(); // No selection and no existing answer
             }
         });
 

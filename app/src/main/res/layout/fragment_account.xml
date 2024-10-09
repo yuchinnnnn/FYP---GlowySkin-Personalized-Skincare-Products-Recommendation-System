@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
     tools:context=".AccountFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -54,8 +55,8 @@
 
         <ImageView
             android:id="@+id/edit_button"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:layout_marginStart="20dp"
             app:layout_constraintStart_toEndOf="@+id/email"
             app:layout_constraintTop_toTopOf="parent"

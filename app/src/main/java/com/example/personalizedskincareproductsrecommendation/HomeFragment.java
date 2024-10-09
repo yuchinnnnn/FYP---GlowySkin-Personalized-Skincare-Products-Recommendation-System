@@ -14,9 +14,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -36,11 +37,14 @@ public class HomeFragment extends Fragment {
     private ImageView notification;
     private Button skinQuiz, skinLog, skinAnalysis;
     private LinearLayout skinGoalsContainer;
+    private RecyclerView recyclerViewSkinTips;
     private FloatingActionButton fab;
     private BottomNavigationView bottomNavigationView;
     private DatabaseReference databaseReference;
     private static final String TAG = "HomeFragment";
     private String userId;
+    private SkinCareTipAdapter adapter; // Assuming you create this adapter
+    private List<SkinCareTip> skinCareTipsList;
 
     // Factory method to create a new instance of this fragment using the provided userId
     public static HomeFragment newInstance(String userId) {
@@ -56,6 +60,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        // Initialize existing views
         currentHour = view.findViewById(R.id.currentHour);
         greeting = view.findViewById(R.id.greeting);
         fab = view.findViewById(R.id.fab);
@@ -65,7 +70,12 @@ public class HomeFragment extends Fragment {
         skinGoalsContainer = view.findViewById(R.id.goal);
         bottomNavigationView = view.findViewById(R.id.bottombar);
 
-        bottomNavigationView.setSelectedItemId(R.id.home);
+        // Initialize RecyclerView
+        recyclerViewSkinTips = view.findViewById(R.id.recyclerViewSkinTips);
+        recyclerViewSkinTips.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        skinCareTipsList = new ArrayList<>();
+        adapter = new SkinCareTipAdapter(getActivity(), skinCareTipsList); // Create your adapter
+        recyclerViewSkinTips.setAdapter(adapter);
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
@@ -140,6 +150,9 @@ public class HomeFragment extends Fragment {
                     Log.e(TAG, "Database error: " + error.getMessage());
                 }
             });
+
+            // Load skincare tips from Firebase
+            loadSkinCareTips(userId);
         }
 
         notification.setOnClickListener(v -> {
@@ -147,7 +160,6 @@ public class HomeFragment extends Fragment {
             intent.putExtra(ARG_USER_ID, userId);
             startActivity(intent);
         });
-
 
         fab.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), SkinAnalysis.class);
@@ -198,17 +210,37 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    private void replaceFragment(Fragment fragment) {
-        FragmentManager fm = getActivity().getSupportFragmentManager();
-        if (fm != null) {
-            FragmentTransaction fragmentTransaction = fm.beginTransaction();
-            fragmentTransaction.replace(R.id.frame_layout, fragment);
-            fragmentTransaction.commit();
-        }
+    private void loadSkinCareTips(String userId) {
+        DatabaseReference tipsReference = FirebaseDatabase.getInstance().getReference("SkincareTips"); // Change path as needed
+        tipsReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                skinCareTipsList.clear(); // Clear existing tips
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String title = snapshot.child("title").getValue(String.class);
+                    String tip = snapshot.child("tip").getValue(String.class);
+
+                    // Get the list of images
+                    List<String> imageUrls = new ArrayList<>();
+                    for (DataSnapshot imageSnapshot : snapshot.child("images").getChildren()) {
+                        String imageUrl = imageSnapshot.getValue(String.class);
+                        if (imageUrl != null) {
+                            imageUrls.add(imageUrl); // Add to the list
+                        }
+                    }
+
+                    skinCareTipsList.add(new SkinCareTip(title, tip, imageUrls)); // Add to the list
+                }
+                adapter.notifyDataSetChanged(); // Notify adapter of data change
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Database error: " + error.getMessage());
+            }
+        });
     }
 
     private void displaySkinGoals(List<String> skinGoalsList) {
-        // Join the skin goals with commas
         StringBuilder skinGoalsBuilder = new StringBuilder();
         for (int i = 0; i < skinGoalsList.size(); i++) {
             skinGoalsBuilder.append(skinGoalsList.get(i));

@@ -60,7 +60,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp">
 
-        <!-- Filter by Rating -->
         <Spinner
             android:id="@+id/ratingFilterSpinner"
             android:layout_width="0dp"
@@ -69,7 +68,6 @@
             android:entries="@array/rating_filter_options"
             android:spinnerMode="dropdown" />
 
-        <!-- Sort by Date -->
         <Spinner
             android:id="@+id/dateSortSpinner"
             android:layout_width="0dp"
@@ -80,7 +78,6 @@
             android:layout_marginStart="8dp" />
     </LinearLayout>
 
-    <!-- Feedback List (RecyclerView) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feedbackRecyclerView"
         android:layout_width="0dp"

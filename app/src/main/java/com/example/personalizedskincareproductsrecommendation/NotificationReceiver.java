@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
 
 public class NotificationReceiver extends BroadcastReceiver {
@@ -25,7 +27,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         Intent repeatingIntent = new Intent(context, Notification.class);
         repeatingIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 100, repeatingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, reminderMessage.hashCode(), repeatingIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "default")
                 .setContentIntent(pendingIntent)
@@ -34,6 +36,9 @@ public class NotificationReceiver extends BroadcastReceiver {
                 .setContentText(reminderMessage)
                 .setAutoCancel(true);
 
-        notificationManager.notify(100, builder.build());
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+        Log.d("NotificationReceiver", "onReceive: Notification triggered with message: " + reminderMessage);
+
+
     }
 }

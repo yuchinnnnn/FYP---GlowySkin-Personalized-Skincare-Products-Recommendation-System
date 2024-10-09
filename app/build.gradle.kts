@@ -72,13 +72,14 @@ dependencies {
 
     // For editProfile upload image
     implementation("com.github.bumptech.glide:glide:4.15.1")
-
     implementation ("de.hdodenhof:circleimageview:3.1.0")
 
     // For chart usage
-//    implementation ("com.github.AnyChart:AnyChart-Android:1.1.5")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.0.3")
-//    implementation ("com.github.anyChart:AnyChart-Android:1.1.2")
-//    implementation("android:multidex:multidex:2.0.1")
+
+    // For model training usage
+    implementation ("org.tensorflow:tensorflow-lite:2.9.0")
+    implementation ("org.tensorflow:tensorflow-lite-support:0.3.1")
+
 
 }

@@ -18,6 +18,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class NightReminder extends AppCompatActivity {
 
     // Day buttons
@@ -52,29 +54,19 @@ public class NightReminder extends AppCompatActivity {
         timepicker.setIs24HourView(true);
 
         setButton = findViewById(R.id.set_button);
-
+        setButton.setEnabled(false);
         setButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveReminderToFirebase();
+                showConfirmDialog();
             }
         });
 
         cancel = findViewById(R.id.cancel_button);
-        cancel.setOnClickListener(v -> {
-            HomeFragment homeFragment = HomeFragment.newInstance(userId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
-                    .commit();
-        });
+        cancel.setOnClickListener(v -> finish());
 
-        back = findViewById(R.id.back_button);
-        back.setOnClickListener(v -> {
-            HomeFragment homeFragment = HomeFragment.newInstance(userId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
-                    .commit();
-        });
+        back = findViewById(R.id.back);
+        back.setOnClickListener(v -> finish());
 
         reminder = findViewById(R.id.reminder);
         reminder.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -86,13 +78,35 @@ public class NightReminder extends AppCompatActivity {
         });
     }
 
+    private void showConfirmDialog() {
+        SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+        sweetAlertDialog.setTitle("Are you sure?");
+        sweetAlertDialog.setContentText("Do you want to set the reminder?");
+        sweetAlertDialog.setConfirmText("Yes");
+        sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                sDialog.dismissWithAnimation();
+                saveReminderToFirebase();
+                finish();
+            }
+        });
+        sweetAlertDialog.setCancelText("No");
+        sweetAlertDialog.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                sDialog.dismissWithAnimation();
+            }
+        });
+        sweetAlertDialog.show();
+    }
+
     private void saveReminderToFirebase() {
         // Retrieve the selected time
         int hour = timepicker.getHour();
         int minute = timepicker.getMinute();
 
-        // Check if the time is in the morning session
-        if (hour <= 17) {
+        if (hour <= 17 || hour >= 24) {
             Toast.makeText(this, "Please select a time after 5PM and before 12AM", Toast.LENGTH_SHORT).show();
             return;
         }

@@ -1,7 +1,7 @@
 package com.example.personalizedskincareproductsrecommendation;
 
 public class Product {
-    private String brand, name, country, function, ingredients, afterUse, type, side_effect;
+    private String brand, name, country, function, ingredients, afterUse, type, side_effect, skinType;
     private String imageUrl;
 
     // Default constructor is required for Firestore
@@ -33,6 +33,14 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSkinType() {
+        return skinType;
+    }
+
+    public void setSkinType(String skinType) {
+        this.skinType = skinType;
     }
 
     public String getCountry() {

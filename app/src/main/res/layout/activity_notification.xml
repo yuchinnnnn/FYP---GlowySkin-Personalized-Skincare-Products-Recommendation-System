@@ -6,43 +6,49 @@
     android:layout_height="match_parent"
     tools:context=".Notification">
 
-    <LinearLayout
-        android:id="@+id/title"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
+        android:layout_height="60dp"
         android:gravity="top"
-        android:background="@color/light_pink"
         android:orientation="horizontal"
+        android:background="#F2D5D7"
+        android:padding="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:id="@+id/back_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="8dp"
-            android:padding="15dp"
-            android:src="@drawable/previous"/>
+            android:id="@+id/back"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/headerLayout"
+            app:layout_constraintBottom_toBottomOf="@+id/headerLayout"
+            android:src="@drawable/previous" />
+
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="45dp"
-            android:layout_marginEnd="10dp"
-            android:padding="20dp"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@+id/back"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/headerLayout"
+            app:layout_constraintBottom_toBottomOf="@+id/headerLayout"
             android:text="Notification"
+            android:gravity="center_horizontal"
+            android:textStyle="bold"
             android:textColor="@color/black"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textSize="20sp" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/title"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

@@ -112,11 +112,23 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                existingSensitives.clear();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    existingSensitives.add(snapshot.getValue(String.class));
+                existingSensitives.clear(); // Clear before loading new values
+
+                Object sensitivitiesFromDB = dataSnapshot.getValue();  // Get the value
+
+                if (sensitivitiesFromDB instanceof List) {
+                    // If it's a List, cast and use it directly
+                    existingSensitives.addAll((List<String>) sensitivitiesFromDB);
+                } else if (sensitivitiesFromDB instanceof String) {
+                    // If it's a String, split it (assuming it's comma-separated)
+                    String sensitivitiesString = (String) sensitivitiesFromDB;
+                    String[] sensitivitiesArray = sensitivitiesString.split(",");  // Assuming a comma separator
+                    for (String sensitivity : sensitivitiesArray) {
+                        existingSensitives.add(sensitivity.trim());
+                    }
                 }
-                highlightExistingSensitives();
+
+                highlightExistingSensitives();  // Highlight the checkboxes based on loaded data
             }
 
             @Override
@@ -137,7 +149,7 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
     }
 
     private void updateSensitiveInDatabase() {
-        databaseReference.setValue(selectedSensitives)
+        databaseReference.setValue(selectedSensitives)  // selectedSensitives is a List<String>
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Intent intent = new Intent(SkinTypeQuiz2.this, SkinTypeQuiz3.class);

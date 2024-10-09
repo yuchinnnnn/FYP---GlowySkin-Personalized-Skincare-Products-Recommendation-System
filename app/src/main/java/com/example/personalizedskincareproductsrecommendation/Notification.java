@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,6 +33,7 @@ public class Notification extends AppCompatActivity {
     private RecyclerView recyclerView;
     private NotificationAdapter notificationAdapter;
     private List<Reminder> remindersList;
+    private ImageView back;
     private FirebaseAuth mAuth;
     private String userId;
     private static final String ARG_USER_ID = "userId";
@@ -39,6 +42,14 @@ public class Notification extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
+
+        back = findViewById(R.id.back);
+        back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         // Initialize FirebaseAuth
         mAuth = FirebaseAuth.getInstance();

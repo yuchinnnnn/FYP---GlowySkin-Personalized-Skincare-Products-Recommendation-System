@@ -2,6 +2,8 @@ package com.example.personalizedskincareproductsrecommendation;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,9 +35,7 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
     private static final String ARG_USER_ID = "userId";
 
     // Variables to store answers from previous quizzes
-    private String answerQuiz1;
-    private String answerQuiz2;
-    private String answerQuiz3;
+    private String answerQuiz1, answerQuiz2, answerQuiz3, existingEnvironment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +65,8 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
 
         // Load data from previous quizzes
         loadPreviousQuizData();
+        // Load existing answer for quiz 4
+        loadExistingReaction();
 
         travel.setOnClickListener(v -> selectEnvironment("Travel", travel));
         makeup.setOnClickListener(v -> selectEnvironment("Makeup", makeup));
@@ -80,12 +82,13 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
 
         save.setOnClickListener(v -> {
             if (selectedEnvironment != null) {
+                // Save the selected environment to the database
                 databaseReference.child("skinTypeQuiz4").setValue(selectedEnvironment)
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                // Analyze and show the skin type
+                                // Analyze and show the skin type dialog
                                 String skinType = analyzeSkinType();
-                                showSkinTypeDialog(skinType);
+                                showSkinTypeDialog(skinType); // Show the dialog
                             } else {
                                 new SweetAlertDialog(SkinTypeQuiz4.this, SweetAlertDialog.ERROR_TYPE)
                                         .setTitleText("Oops...")
@@ -170,6 +173,42 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
         });
     }
 
+    private void loadExistingReaction() {
+        databaseReference.child("skinTypeQuiz4").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                existingEnvironment = dataSnapshot.getValue(String.class);
+                // Update UI based on existing answer
+                if (existingEnvironment != null) {
+                    selectEnvironment(existingEnvironment, getLayoutByAnswer(existingEnvironment));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(SkinTypeQuiz4.this, "Failed to load existing answer", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+    private LinearLayout getLayoutByAnswer(String answer) {
+        switch (answer) {
+            case "Travel":
+                return travel;
+            case "Makeup":
+                return makeup;
+            case "Outdoor":
+                return outdoor;
+            case "Humid":
+                return humid;
+            case "Urban":
+                return urban;
+            default:
+                return null; // Return null if no matching layout found
+        }
+    }
+
     private void selectEnvironment(String answer, LinearLayout selectedLayout) {
         travel.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
         makeup.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
@@ -182,16 +221,20 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
     }
 
     private String analyzeSkinType() {
-        if ("Dry".equals(answerQuiz1) && answerQuiz2 != null && "Often".equals(answerQuiz3)) {
-            return "Dry and Sensitive Skin";
-        } else if ("Oil".equals(answerQuiz1) && answerQuiz2 != null && "Rare".equals(answerQuiz3)) {
-            return "Oily and Sensitive Skin";
-        } else if ("Combination".equals(answerQuiz1) && answerQuiz2 != null && "Rare".equals(answerQuiz3)) {
-            return "Combination and Sensitive Skin";
-        } else {
-            return "Normal Skin";
+        boolean isSensitive = !"None".equals(answerQuiz2) && "Often".equals(answerQuiz3);
+
+        switch (answerQuiz1) {
+            case "Dry":
+                return isSensitive ? "Dry and Sensitive Skin" : "Dry Skin";
+            case "Oil":
+                return isSensitive && "Rare".equals(answerQuiz3) ? "Oily and Sensitive Skin" : "Oily Skin";
+            case "Combination":
+                return isSensitive && "Rare".equals(answerQuiz3) ? "Combination and Sensitive Skin" : "Combination Skin";
+            default:
+                return "Normal Skin";
         }
     }
+
 
     private void showSkinTypeDialog(String skinType) {
         SweetAlertDialog dialog = new SweetAlertDialog(SkinTypeQuiz4.this, SweetAlertDialog.SUCCESS_TYPE)
@@ -199,25 +242,27 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
                 .setContentText("Based on your answers, your skin type is: " + skinType)
                 .setConfirmText("OK");
 
-        dialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-            @Override
-            public void onClick(SweetAlertDialog sweetAlertDialog) {
-                // Save the analyzed skin type and quiz answers to the database
-                saveQuizResultsToDatabase(skinType);
+        dialog.setConfirmClickListener(sweetAlertDialog -> {
+            // Save the analyzed skin type and quiz answers to the database
+            saveQuizResultsToDatabase(skinType);
 
-                // Close the dialog
-                sweetAlertDialog.dismiss();
+            // Close the dialog
+            sweetAlertDialog.dismiss();
 
-                // Navigate to the next page or activity
-                HomeFragment homeFragment = HomeFragment.newInstance(userId);
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, homeFragment)
-                        .commit();
-            }
+            // Navigate to the MainActivity (or any activity that hosts the HomeFragment)
+            navigateToHomeFragment();
         });
 
         dialog.show();
     }
+
+    private void navigateToHomeFragment() {
+        HomeFragment homeFragment = HomeFragment.newInstance(userId);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, homeFragment)
+                .commit();
+    }
+
 
 
     private void saveQuizResultsToDatabase(String skinType) {
@@ -236,6 +281,4 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
             Toast.makeText(SkinTypeQuiz4.this, "User ID is not available", Toast.LENGTH_SHORT).show();
         }
     }
-
 }
-

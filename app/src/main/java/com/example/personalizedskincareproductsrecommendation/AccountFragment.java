@@ -36,7 +36,7 @@ public class AccountFragment extends Fragment {
     private static final String ARG_USER_ID = "userId";
     private static final String TAG = "AccountFragment";
 
-    private ImageView profile_pic;
+    private ImageView profile_pic, edit_button;
     private ListView skin, reminders;
     private String[] skin_list = {"Skin Goals", "Skin Types", "Do Skin Types Quiz"};
     private String[] reminders_list = {"Daily morning log reminders", "Daily evening log reminders", "Daily night log reminders"};
@@ -66,7 +66,7 @@ public class AccountFragment extends Fragment {
         usernameTextView = view.findViewById(R.id.username);
         emailTextView = view.findViewById(R.id.email);
         home = view.findViewById(R.id.home_button);
-        edit = view.findViewById(R.id.edit_button);
+        edit_button = view.findViewById(R.id.edit_button);
         logout = view.findViewById(R.id.logout);
         deleteAccount = view.findViewById(R.id.delete_account);
 
@@ -182,7 +182,7 @@ public class AccountFragment extends Fragment {
                     .commit();
         });
 
-        edit.setOnClickListener(v -> {
+        edit_button.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), EditProfile.class);
             intent.putExtra("userId", userId);  // Pass the userId to the activity
             startActivity(intent);

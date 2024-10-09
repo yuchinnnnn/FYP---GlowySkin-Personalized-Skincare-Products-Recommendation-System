@@ -17,6 +17,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class MorningReminder extends AppCompatActivity {
 
     // Day buttons
@@ -51,29 +53,17 @@ public class MorningReminder extends AppCompatActivity {
         timepicker.setIs24HourView(true);
 
         setButton = findViewById(R.id.set_button);
-
-        setButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveReminderToFirebase();
-            }
-        });
+        // Initially set the "Set" button to disabled
+        setButton.setEnabled(false);
+//        setButton.setOnClickListener(v -> saveReminderToFirebase());
+        setButton.setOnClickListener(v -> showConfirmDialog());
 
         cancel = findViewById(R.id.cancel_button);
-        cancel.setOnClickListener(v -> {
-            HomeFragment homeFragment = HomeFragment.newInstance(userId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
-                    .commit();
-        });
+        cancel.setOnClickListener(v -> finish());
 
-        back = findViewById(R.id.back_button);
-        back.setOnClickListener(v -> {
-            HomeFragment homeFragment = HomeFragment.newInstance(userId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
-                    .commit();
-        });
+        back = findViewById(R.id.back);
+        back.setOnClickListener(v -> finish());
+
 
         reminder = findViewById(R.id.reminder);
         reminder.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -83,6 +73,30 @@ public class MorningReminder extends AppCompatActivity {
                 setButton.setEnabled(false);
             }
         });
+    }
+
+
+    private void showConfirmDialog() {
+        SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+        sweetAlertDialog.setTitle("Are you sure?");
+        sweetAlertDialog.setContentText("Do you want to set the reminder?");
+        sweetAlertDialog.setConfirmText("Yes");
+        sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                sDialog.dismissWithAnimation();
+                saveReminderToFirebase();
+                finish();
+            }
+        });
+        sweetAlertDialog.setCancelText("No");
+        sweetAlertDialog.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                sDialog.dismissWithAnimation();
+    }
+        });
+        sweetAlertDialog.show();
     }
 
     private void saveReminderToFirebase() {
