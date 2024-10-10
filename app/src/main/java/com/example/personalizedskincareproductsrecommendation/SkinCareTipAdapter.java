@@ -40,12 +40,12 @@ public class SkinCareTipAdapter extends RecyclerView.Adapter<SkinCareTipAdapter.
         holder.title.setText(tip.getTitle());
         holder.cardView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TipDetails.class);
-            intent.putExtra(tip.getId(), tip.getTitle());
+            intent.putExtra("tipId", tip.getId());  // Pass the tipId with the key "tipId"
             context.startActivity(intent);
-            Toast.makeText(context, "View " + tip.getTitle(), Toast.LENGTH_SHORT).show();
         });
 
-        // Alternatively, load the first image directly into an ImageView if only showing one
+
+        // Load the first image if available
         if (!tip.getImages().isEmpty()) {
             Glide.with(context)
                     .load(tip.getImages().get(0)) // Load the first image

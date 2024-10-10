@@ -211,12 +211,13 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadSkinCareTips(String userId) {
-        DatabaseReference tipsReference = FirebaseDatabase.getInstance().getReference("SkincareTips"); // Change path as needed
+        DatabaseReference tipsReference = FirebaseDatabase.getInstance().getReference("SkincareTips");
         tipsReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 skinCareTipsList.clear(); // Clear existing tips
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    String id = snapshot.getKey(); // Get the unique tip ID
                     String title = snapshot.child("title").getValue(String.class);
                     String tip = snapshot.child("tip").getValue(String.class);
 
@@ -229,16 +230,21 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
-                    skinCareTipsList.add(new SkinCareTip(title, tip, imageUrls)); // Add to the list
+                    // Set the id when creating the SkinCareTip object
+                    SkinCareTip skinCareTip = new SkinCareTip(title, tip, imageUrls);
+                    skinCareTip.setId(id); // Set the ID
+                    skinCareTipsList.add(skinCareTip); // Add to the list
                 }
                 adapter.notifyDataSetChanged(); // Notify adapter of data change
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Database error: " + error.getMessage());
             }
         });
     }
+
 
     private void displaySkinGoals(List<String> skinGoalsList) {
         StringBuilder skinGoalsBuilder = new StringBuilder();
