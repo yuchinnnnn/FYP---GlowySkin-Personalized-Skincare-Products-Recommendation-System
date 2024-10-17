@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -81,7 +82,26 @@ public class HomeFragment extends Fragment {
             Fragment selectedFragment = null;
 
             if (item.getItemId() == R.id.history) {
-                selectedFragment = new HistoryFragment();
+                if (userId != null) {
+                    HistoryFragment historyFragment = new HistoryFragment();
+
+                    // Create a Bundle and put the userId in it
+                    Bundle bundle = new Bundle();
+                    bundle.putString("ARG_USER_ID", userId); // Assuming userId is a String
+
+                    // Set the arguments for the fragment
+                    historyFragment.setArguments(bundle);
+
+                    // Proceed to replace the fragment
+                    selectedFragment = historyFragment;
+
+                    // Replace the fragment in your fragment container
+                    FragmentManager fragmentManager = getParentFragmentManager(); // Use getParentFragmentManager() here
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, selectedFragment)
+                            .addToBackStack(null) // Optional: add to back stack if you want to allow back navigation
+                            .commit();
+                }
             } else if (item.getItemId() == R.id.products) {
                 selectedFragment = new ProductsFragment();
             } else if (item.getItemId() == R.id.account) {
@@ -183,13 +203,14 @@ public class HomeFragment extends Fragment {
         skinLog = view.findViewById(R.id.skinlogButton);
         skinLog.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), SkinLog.class);
-            intent.putExtra(ARG_USER_ID, userId);
+            intent.putExtra("ARG_USER_ID", userId);
             startActivity(intent);
         });
 
         skinAnalysis = view.findViewById(R.id.skinAnalysisButton);
         skinAnalysis.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), SkinAnalysis.class);
+            intent.putExtra(ARG_USER_ID, userId);
             startActivity(intent);
         });
 

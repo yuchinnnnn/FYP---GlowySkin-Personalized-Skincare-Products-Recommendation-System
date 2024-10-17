@@ -1,64 +1,111 @@
 package com.example.personalizedskincareproductsrecommendation;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.TextView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SkinLogHistory#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class SkinLogHistory extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private ListView skinLogListView;
+    private SkinLogAdapter skinLogListAdapter;
+    private TextView noHistoryMessage;
+    private List<SkinLogEntry> skinLogEntries;
+    private DatabaseReference databaseReference;
+    private String userId;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public SkinLogHistory() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SkinLogHistory.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SkinLogHistory newInstance(String param1, String param2) {
-        SkinLogHistory fragment = new SkinLogHistory();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_skin_log_history, container, false);
+
+        // Initialize views
+        skinLogListView = rootView.findViewById(R.id.skin_log_history_list);
+        skinLogListView.setDivider(null);
+        skinLogEntries = new ArrayList<>();
+        skinLogListAdapter = new SkinLogAdapter(getContext(), skinLogEntries);
+        skinLogListView.setAdapter(skinLogListAdapter);
+
+        noHistoryMessage = rootView.findViewById(R.id.no_history_message);
+
+        // Get user ID from arguments
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            userId = getArguments().getString("ARG_USER_ID");
+            Log.d("SkinLogHistory", "User ID: " + userId);
+        } else {
+            Log.e("SkinLogHistory", "Arguments are null!");
         }
+
+        // Initialize Firebase database reference
+        databaseReference = FirebaseDatabase.getInstance().getReference("SkinLog").child(userId);
+        fetchSkinLogs();
+
+        return rootView;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_skin_log_history, container, false);
+    private void fetchSkinLogs() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                skinLogEntries.clear();
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot logSnapshot : dataSnapshot.getChildren()) {
+                        String logId = logSnapshot.getKey(); // Use logId directly from the key
+                        String timestamp = logSnapshot.child("timestamp").getValue(String.class);
+                        String userId = logSnapshot.child("userId").getValue(String.class);
+                        Log.d("SkinLogHistory", "Log ID: " + logId + ", Timestamp: " + timestamp + ", User ID: " + userId);
+
+                        // Extract selfies URLs
+                        String leftSelfieUrl = logSnapshot.child("selfies/left").getValue(String.class);
+                        String rightSelfieUrl = logSnapshot.child("selfies/right").getValue(String.class);
+                        String frontSelfieUrl = logSnapshot.child("selfies/front").getValue(String.class);
+                        String neckSelfieUrl = logSnapshot.child("selfies/neck").getValue(String.class);
+
+                        SkinLogEntry entry = new SkinLogEntry(logId, timestamp, userId, leftSelfieUrl, rightSelfieUrl, frontSelfieUrl, neckSelfieUrl);
+                        skinLogEntries.add(entry);
+                    }
+
+                    Log.d("SkinLogHistory", "Entries count: " + skinLogEntries.size());
+                    skinLogListAdapter.notifyDataSetChanged();
+
+                    // Handle visibility
+                    if (skinLogEntries.isEmpty()) {
+                        skinLogListView.setVisibility(View.GONE);
+                        noHistoryMessage.setVisibility(View.VISIBLE);
+                    } else {
+                        skinLogListView.setVisibility(View.VISIBLE);
+                        noHistoryMessage.setVisibility(View.GONE);
+                    }
+                } else {
+                    skinLogListView.setVisibility(View.GONE);
+                    noHistoryMessage.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("SkinLogHistory", "Database error: " + databaseError.getMessage());
+            }
+        });
     }
 }
+
+

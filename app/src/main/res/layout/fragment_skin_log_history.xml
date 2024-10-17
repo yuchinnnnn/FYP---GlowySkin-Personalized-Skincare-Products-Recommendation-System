@@ -3,38 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".SkinLogHistory">
 
-    <LinearLayout
-        android:id="@+id/historyList"
+    <ListView
+        android:id="@+id/skin_log_history_list"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:orientation="vertical"
-        app:layout_constraintEnd_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerLayout"
-        android:layout_marginTop="90dp"
-        android:background="@color/white"
-        android:elevation="6dp">
+        android:layout_height="match_parent"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:paddingLeft="10dp"
-            android:text="Date: xxxx"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:textSize="16dp"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingBottom="10dp"
-            android:text="Time: xxxx AM"
-            android:textColor="@color/black"/>
-
-    </LinearLayout>
+    <TextView
+        android:id="@+id/no_history_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No history found"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 
 </FrameLayout>

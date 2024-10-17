@@ -25,6 +25,9 @@
         android:theme="@style/Theme.PersonalizedSkincareProductsRecommendation"
         tools:targetApi="31">
         <activity
+            android:name=".SkinLogDetails"
+            android:exported="false" />
+        <activity
             android:name=".SkinAnalysisResult"
             android:exported="false" />
         <activity
@@ -130,7 +133,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+            android:authorities="com.example.personalizedskincareproductsrecommendation.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

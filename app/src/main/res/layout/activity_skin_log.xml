@@ -71,8 +71,8 @@
 
             <ImageView
                 android:id="@+id/left_selfie"
-                android:layout_width="60dp"
-                android:layout_height="80dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:src="@drawable/baseline_add_24" />
 
@@ -101,8 +101,8 @@
 
             <ImageView
                 android:id="@+id/front_selfie"
-                android:layout_width="60dp"
-                android:layout_height="80dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:src="@drawable/baseline_add_24" />
 
@@ -130,8 +130,8 @@
 
             <ImageView
                 android:id="@+id/right_selfie"
-                android:layout_width="60dp"
-                android:layout_height="80dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:src="@drawable/baseline_add_24" />
 
@@ -159,8 +159,8 @@
 
             <ImageView
                 android:id="@+id/neck_selfie"
-                android:layout_width="60dp"
-                android:layout_height="80dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:src="@drawable/baseline_add_24" />
 

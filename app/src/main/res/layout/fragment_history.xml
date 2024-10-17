@@ -7,59 +7,66 @@
     android:layout_height="match_parent"
     tools:context=".HistoryFragment">
 
-    <LinearLayout
-        android:id="@+id/headerLayout"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#F2D5D7"
-        android:gravity="top"
-        android:orientation="horizontal"
-        android:padding="20dp"
-        app:layout_constraintEnd_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/back"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/previous" />
-
-        <TextView
+        <LinearLayout
+            android:id="@+id/headerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="History"
-            android:gravity="center_horizontal"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:textSize="20dp"/>
+            android:background="#F2D5D7"
+            android:gravity="top"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            app:layout_constraintEnd_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    </LinearLayout>
+            <ImageView
+                android:id="@+id/back"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/previous" />
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="70dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="History"
+                android:gravity="center_horizontal"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:textSize="20sp"/>
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
+        </LinearLayout>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Skin Log" />
+            app:layout_constraintTop_toBottomOf="@id/headerLayout">
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Skin Log" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Skin Analysis" />
+
+        </com.google.android.material.tabs.TabLayout>
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Skin Analysis" />
+            app:layout_constraintTop_toBottomOf="@+id/tab_layout">
 
-    </com.google.android.material.tabs.TabLayout>
+        </androidx.viewpager.widget.ViewPager>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/viewpager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/tab_layout">
 
-    </androidx.viewpager.widget.ViewPager>
 
 
 </FrameLayout>

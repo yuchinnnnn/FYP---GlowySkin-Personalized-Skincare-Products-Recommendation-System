@@ -89,6 +89,7 @@
                 android:layout_height="60dp"
                 android:text="Sign Up"
                 android:textSize="18dp"
+                android:textAllCaps="false"
                 android:layout_marginTop="30dp"
                 android:backgroundTint="@color/black"
                 app:cornerRadius="10dp"/>
