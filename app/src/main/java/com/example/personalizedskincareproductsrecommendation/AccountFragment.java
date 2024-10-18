@@ -1,5 +1,6 @@
 package com.example.personalizedskincareproductsrecommendation;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -227,14 +228,16 @@ public class AccountFragment extends Fragment {
                         // Load the image using the URL with Glide
                         Glide.with(getContext()).load(profilePhotoUrl).into(profile_pic);
                         Log.d(TAG, "Profile photo loaded successfully.");
+
+                        // Set click listener to show the full-size profile picture
+                        profile_pic.setOnClickListener(v -> showFullSizeImage(profilePhotoUrl));
+
                     } else {
                         Log.d(TAG, "Profile photo URL is null.");
-                        // Load a default image if profile photo URL is null
                         profile_pic.setImageResource(R.drawable.baseline_account_circle_24); // Set your default image here
                     }
                 } else {
                     Log.d(TAG, "No profile photo URL found.");
-                    // Load a default image if the URL doesn't exist
                     profile_pic.setImageResource(R.drawable.baseline_account_circle_24); // Set your default image here
                 }
             }
@@ -242,9 +245,27 @@ public class AccountFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Failed to load profile photo URL: " + error.getMessage());
-                // Load a default image in case of error
                 profile_pic.setImageResource(R.drawable.baseline_account_circle_24); // Set your default image here
             }
         });
     }
+
+    private void showFullSizeImage(String imageUrl) {
+        // Create an AlertDialog to show the larger image
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_fullscreen_image, null);
+        builder.setView(dialogView);
+
+        ImageView fullImageView = dialogView.findViewById(R.id.full_image_view);
+
+        // Load the full-size image using Glide
+        Glide.with(getContext()).load(imageUrl).into(fullImageView);
+
+        // Create and show the dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
 }

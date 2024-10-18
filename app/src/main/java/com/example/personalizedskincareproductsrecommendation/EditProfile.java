@@ -50,6 +50,10 @@ public class EditProfile extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
     private String userId;
+    private String originalUsername;
+    private int originalAge;
+    private String originalGender;
+
 
     StorageReference storageReference;
     Uri imageUri;
@@ -74,7 +78,7 @@ public class EditProfile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
-        back = findViewById(R.id.back_button);
+        back = findViewById(R.id.back);
         save = findViewById(R.id.save_button);
         profile_pic = findViewById(R.id.profile_pic);
         username_text = findViewById(R.id.username_text);
@@ -103,8 +107,8 @@ public class EditProfile extends AppCompatActivity {
         save.setOnClickListener(v -> new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
                 .setTitleText("Are you sure?")
                 .setContentText("Do you want to save the changes?")
-                .setConfirmText("Yes, save it!")
-                .setCancelText("Cancel")
+                .setConfirmText("Yes")
+                .setCancelText("No")
                 .setConfirmClickListener(sDialog -> {
                     sDialog.dismissWithAnimation();
 
@@ -112,6 +116,7 @@ public class EditProfile extends AppCompatActivity {
                     String ageStr = age_text.getText().toString();
                     String newGender = gender_text.getText().toString();
 
+                    // Check if fields are empty
                     if (TextUtils.isEmpty(newUsername) || TextUtils.isEmpty(ageStr) || TextUtils.isEmpty(newGender)) {
                         Toast.makeText(EditProfile.this, "Please fill out all fields", Toast.LENGTH_SHORT).show();
                         return;
@@ -125,9 +130,15 @@ public class EditProfile extends AppCompatActivity {
                         return;
                     }
 
-                    saveProfileChanges(newUsername, newAge, newGender);
+                    // Validate if any changes were made
+                    if (newUsername.equals(originalUsername) && newAge == originalAge && newGender.equals(originalGender)) {
+                        Toast.makeText(EditProfile.this, "No changes detected", Toast.LENGTH_SHORT).show();
+                    } else {
+                        saveProfileChanges(newUsername, newAge, newGender);
+                    }
                 })
                 .show());
+
 
         username_text.setOnClickListener(v -> showEditUsernameDialog());
         age_text.setOnClickListener(v -> showAgePickerDialog());
@@ -182,10 +193,16 @@ public class EditProfile extends AppCompatActivity {
                     Long ageLong = snapshot.child("age").getValue(Long.class);
                     String gender = snapshot.child("gender").getValue(String.class);
 
-                    username_text.setText(username != null ? username : "N/A");
+                    // Set the original values for comparison
+                    originalUsername = username != null ? username : "";
+                    originalAge = ageLong != null ? ageLong.intValue() : 0;
+                    originalGender = gender != null ? gender : "";
+
+                    // Populate UI fields
+                    username_text.setText(originalUsername);
                     email_text.setText(email != null ? email : "N/A");
-                    age_text.setText(ageLong != null ? ageLong.toString() : "N/A");
-                    gender_text.setText(gender != null ? gender : "N/A");
+                    age_text.setText(String.valueOf(originalAge));
+                    gender_text.setText(originalGender);
                 } else {
                     Log.d(TAG, "Snapshot does not exist");
                 }
@@ -197,6 +214,7 @@ public class EditProfile extends AppCompatActivity {
             }
         });
     }
+
 
     private void showUploadImageDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

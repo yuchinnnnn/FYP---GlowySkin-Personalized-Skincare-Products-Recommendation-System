@@ -3,6 +3,8 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+val camerax_version = "1.1.0"
+
 android {
     namespace = "com.example.personalizedskincareproductsrecommendation"
     compileSdk = 34
@@ -57,6 +59,12 @@ dependencies {
     implementation ("com.google.firebase:firebase-storage:20.0.1")
     implementation ("androidx.drawerlayout:drawerlayout:1.0.0")
 
+    implementation ("androidx.camera:camera-core:$camerax_version")
+    implementation ("androidx.camera:camera-camera2:$camerax_version")
+    implementation ("androidx.camera:camera-lifecycle:$camerax_version")
+    implementation ("androidx.camera:camera-view:$camerax_version")
+
+    implementation ("com.github.chrisbanes:PhotoView:2.3.0")
 
     // for password encryption
     implementation ("org.mindrot:jbcrypt:0.4")

@@ -69,6 +69,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <com.example.personalizedskincareproductsrecommendation.FaceOutlineView
+                android:id="@+id/leftFaceOutlineView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                android:visibility="gone" />
+
             <ImageView
                 android:id="@+id/left_selfie"
                 android:layout_width="match_parent"
@@ -99,6 +106,13 @@
             app:layout_constraintStart_toEndOf="@+id/left_selfie_layout"
             app:layout_constraintTop_toTopOf="parent">
 
+            <com.example.personalizedskincareproductsrecommendation.FaceOutlineView
+                android:id="@+id/frontFaceOutlineView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                android:visibility="gone" />
+
             <ImageView
                 android:id="@+id/front_selfie"
                 android:layout_width="match_parent"
@@ -128,6 +142,13 @@
             app:layout_constraintStart_toEndOf="@+id/front_selfie_layout"
             app:layout_constraintTop_toTopOf="parent">
 
+            <com.example.personalizedskincareproductsrecommendation.FaceOutlineView
+                android:id="@+id/rightFaceOutlineView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                android:visibility="gone" />
+
             <ImageView
                 android:id="@+id/right_selfie"
                 android:layout_width="match_parent"
@@ -156,6 +177,13 @@
             app:cardCornerRadius="10dp"
             app:layout_constraintStart_toStartOf="@+id/front_selfie_layout"
             app:layout_constraintTop_toBottomOf="@+id/front_selfie_layout">
+
+            <com.example.personalizedskincareproductsrecommendation.FaceOutlineView
+                android:id="@+id/neckOutlineView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="30dp"
+                android:visibility="gone" />
 
             <ImageView
                 android:id="@+id/neck_selfie"

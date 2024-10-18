@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -49,6 +50,7 @@ public class SkinLog extends AppCompatActivity {
 
     // UI Elements
     private ImageView back, left_selfie, front_selfie, right_selfie, neck_selfie;
+    private View frontView, leftView, rightView, neckView;
     private Button done;
 
     // Firebase references
@@ -71,6 +73,11 @@ public class SkinLog extends AppCompatActivity {
         front_selfie = findViewById(R.id.front_selfie);
         right_selfie = findViewById(R.id.right_selfie);
         neck_selfie = findViewById(R.id.neck_selfie);
+
+//        leftView = findViewById(R.id.leftFaceOutlineView);
+//        frontView = findViewById(R.id.frontFaceOutlineView);
+//        rightView = findViewById(R.id.rightFaceOutlineView);
+//        neckView = findViewById(R.id.neckOutlineView);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -105,11 +112,25 @@ public class SkinLog extends AppCompatActivity {
         done = findViewById(R.id.done_button);
         done.setOnClickListener(v -> saveImageDialog());
 
-        left_selfie.setOnClickListener(v -> showImagePickerDialog("left_selfie"));
-        front_selfie.setOnClickListener(v -> showImagePickerDialog("front_selfie"));
-        right_selfie.setOnClickListener(v -> showImagePickerDialog("right_selfie"));
-        neck_selfie.setOnClickListener(v -> showImagePickerDialog("neck_selfie"));
+        left_selfie.setOnClickListener(v -> {
+            showImagePickerDialog("left_selfie");
+//            leftView.setVisibility(View.VISIBLE); // Show outline for left selfie
+        });
 
+        front_selfie.setOnClickListener(v -> {
+            showImagePickerDialog("front_selfie");
+//            frontView.setVisibility(View.VISIBLE); // Show outline for left selfie
+        });
+
+        right_selfie.setOnClickListener(v -> {
+            showImagePickerDialog("right_selfie");
+//            rightView.setVisibility(View.VISIBLE); // Show outline for left selfie
+        });
+
+        neck_selfie.setOnClickListener(v -> {
+            showImagePickerDialog("neck_selfie");
+//            neckView.setVisibility(View.VISIBLE); // Show outline for left selfie
+        });
         // Request necessary permissions
         requestPermissions();
     }

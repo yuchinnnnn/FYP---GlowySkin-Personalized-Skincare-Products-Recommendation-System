@@ -1,5 +1,7 @@
 package com.example.personalizedskincareproductsrecommendation;
 
+import static com.example.personalizedskincareproductsrecommendation.AdminAddContent.ARG_USER_ID;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +33,14 @@ public class SkinLogHistory extends Fragment {
     private List<SkinLogEntry> skinLogEntries;
     private DatabaseReference databaseReference;
     private String userId;
+
+    public static SkinLogHistory newInstance(String userId) {
+        SkinLogHistory fragment = new SkinLogHistory();
+        Bundle args = new Bundle();
+        args.putString(ARG_USER_ID, userId);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Nullable
     @Override

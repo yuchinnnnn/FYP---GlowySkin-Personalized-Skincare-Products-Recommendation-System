@@ -9,7 +9,9 @@
     <LinearLayout
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         android:orientation="vertical">
 
         <ImageView
@@ -39,9 +41,11 @@
     </LinearLayout>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/skin_types_chip_group_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="150dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        android:layout_marginTop="40dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp">
 
@@ -57,7 +61,7 @@
                 android:id="@+id/normal"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Normal"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -69,7 +73,7 @@
                 android:id="@+id/normal_sensitive"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Normal + Sensitive"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -81,7 +85,7 @@
                 android:id="@+id/oily"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Oily"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -93,7 +97,7 @@
                 android:id="@+id/oil_sensitive"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Oily + Sensitive"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -105,7 +109,7 @@
                 android:id="@+id/combination"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Combination"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -117,7 +121,7 @@
                 android:id="@+id/combination_sensitive"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Combination + Sensitive"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -129,7 +133,7 @@
                 android:id="@+id/dry"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Dry"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -141,7 +145,7 @@
                 android:id="@+id/dry_sensitive"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Dry + Sensitive"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -153,7 +157,7 @@
                 android:id="@+id/sensitive"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Sensitive"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -165,48 +169,55 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/skin_types_chip_group_layout"
+        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginTop="200dp"
-        android:orientation="horizontal">
+        android:layout_marginTop="40dp">
 
         <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="40dp"
+            android:id="@+id/tip_sign"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:src="@drawable/lightbulb"/>
 
         <TextView
+            android:id="@+id/notes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/tip_sign"
+            app:layout_constraintBottom_toTopOf="@id/skin_analysis_button"
+            android:layout_marginStart="30dp"
             android:text="Not sure what your skin type is?"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/black"
-            android:layout_gravity="center_vertical"
             android:gravity="center"/>
 
         <TextView
             android:id="@+id/skin_analysis_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="45dp"
+            app:layout_constraintTop_toBottomOf="@id/notes"
             android:text="Do the skin analysis to find out"
             android:textColor="@color/black"
             android:layout_gravity="center_vertical"
             android:gravity="center"/>
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <Button
         android:id="@+id/save_button"
         android:layout_width="300dp"
         android:layout_height="60dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="50dp"
         android:text="Save"
         android:textSize="20sp"
         android:textAllCaps="false"

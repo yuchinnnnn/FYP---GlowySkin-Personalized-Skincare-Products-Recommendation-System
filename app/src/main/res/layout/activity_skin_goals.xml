@@ -37,6 +37,7 @@
             android:text="Can select more than one."
             android:textSize="16sp"
             android:textColor="@color/black"/>
+
     </LinearLayout>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -52,13 +53,13 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:singleSelection="false"
-            app:chipSpacing="10dp">
+            app:chipSpacing="5dp">
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/lessen_acne"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Lessen Acne"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -70,7 +71,7 @@
                 android:id="@+id/lessen_wrinkles"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Lessen Wrinkles"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -82,7 +83,7 @@
                 android:id="@+id/reduce_spots"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Reduce Spots"
                 app:closeIconVisible="false"
                 app:chipBackgroundColor="@color/rose_pink"
@@ -94,7 +95,7 @@
                 android:id="@+id/minimize_pores"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Minimize Pores"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -106,7 +107,7 @@
                 android:id="@+id/firm_skin"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Firmer Skin"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -118,7 +119,7 @@
                 android:id="@+id/even_skin"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="More even skin tone"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"
@@ -130,7 +131,7 @@
                 android:id="@+id/others"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:text="Others"
                 app:chipBackgroundColor="@color/rose_pink"
                 app:closeIconVisible="false"

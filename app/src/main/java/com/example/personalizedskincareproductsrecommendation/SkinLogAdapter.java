@@ -44,6 +44,7 @@ public class SkinLogAdapter extends ArrayAdapter<SkinLogEntry> {
             public void onClick(View v) {
                 Intent intent = new Intent(context, SkinLogDetails.class);
                 intent.putExtra("ARG_USER_ID", entries.get(position).getUserId());
+                intent.putExtra("ARG_LOG_ID", entries.get(position).getLogId());
                 intent.putExtra("ARG_DATE", entries.get(position).getTimestamp());
                 intent.putExtra("ARG_TIME", entries.get(position).getTimestamp());
                 context.startActivity(intent);
@@ -61,8 +62,8 @@ public class SkinLogAdapter extends ArrayAdapter<SkinLogEntry> {
             SimpleDateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
             Date date = originalFormat.parse(timestamp);
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a", Locale.getDefault()); // Use hh for 12-hour format and add "a" for AM/PM
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d yyyy", Locale.getDefault());
+            SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault()); // Use hh for 12-hour format and add "a" for AM/PM
 
             // Set the formatted date and time into the views
             dateView.setText("Date: " + dateFormat.format(date));
