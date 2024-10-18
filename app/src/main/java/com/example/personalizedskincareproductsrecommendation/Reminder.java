@@ -3,19 +3,24 @@ package com.example.personalizedskincareproductsrecommendation;
 public class Reminder {
     private String title;
     private String time;
-    private String key;  // Add this field to store the reminder key
+    private String key;
     private String days;
+    private String status;
+    private Boolean isRemoved, isPassed;
 
     // No-argument constructor for Firebase
     public Reminder() {
     }
 
     // Constructor with arguments (optional)
-    public Reminder(String title, String time, String key, String days) {
+    public Reminder(String title, String time, String key, String days, Boolean isRemoved, Boolean isPassed, String status) {
         this.title = title;
         this.time = time;
         this.key = key;  // Initialize the key field
         this.days = days;
+        this.isRemoved = isRemoved;
+        this.isPassed = isPassed;
+        this.status = status;
     }
 
     // Getter and setter methods for each field
@@ -45,5 +50,24 @@ public class Reminder {
 
     public String getDays(){return days;}
     public void setDays(String day){this.days = days;}
+
+    public Boolean getIsRemoved() {
+        return isRemoved;
+    }
+
+    public void setIsRemoved(Boolean isRemoved) {
+        this.isRemoved = isRemoved;
+    }
+
+    public Boolean getIsPassed() {
+        return isPassed;
+    }
+
+    public void setIsPassed(Boolean isPassed) {
+        this.isPassed = isPassed;
+    }
+
+    public String getStatus() {return status;}
+    public void setStatus(String status) {this.status = status;}
 }
 

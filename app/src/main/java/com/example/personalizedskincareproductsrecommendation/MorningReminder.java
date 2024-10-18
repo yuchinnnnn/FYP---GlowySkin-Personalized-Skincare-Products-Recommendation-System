@@ -2,6 +2,8 @@ package com.example.personalizedskincareproductsrecommendation;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -14,7 +16,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
@@ -104,70 +108,54 @@ public class MorningReminder extends AppCompatActivity {
         int hour = timepicker.getHour();
         int minute = timepicker.getMinute();
 
-        // Check if the time is in the morning session
-        if (hour <= 05 || hour >= 12) {
-            Toast.makeText(this, "Please select a time before 12PM and after 5AM", Toast.LENGTH_SHORT).show();
+        // Validate selected time
+        if (hour < 6 || hour >= 12) {
+            Toast.makeText(this, "Please select a time between 6 AM and 11:59 AM", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String time = String.format("%02d:%02d", hour, minute);
 
         // Retrieve the selected days
-        StringBuilder markedDays = new StringBuilder();
-        if (sun.isChecked()) {
-            markedDays.append("Sunday,");
-        }
-        if (mon.isChecked()) {
-            markedDays.append("Monday,");
-        }
-        if (tue.isChecked()) {
-            markedDays.append("Tuesday,");
-        }
-        if (wed.isChecked()) {
-            markedDays.append("Wednesday,");
-        }
-        if (thurs.isChecked()) {
-            markedDays.append("Thursday,");
-        }
-        if (fri.isChecked()) {
-            markedDays.append("Friday,");
-        }
-        if (sat.isChecked()) {
-            markedDays.append("Saturday,");
-        }
+        List<String> selectedDays = new ArrayList<>();
+        if (sun.isChecked()) selectedDays.add("Sunday");
+        if (mon.isChecked()) selectedDays.add("Monday");
+        if (tue.isChecked()) selectedDays.add("Tuesday");
+        if (wed.isChecked()) selectedDays.add("Wednesday");
+        if (thurs.isChecked()) selectedDays.add("Thursday");
+        if (fri.isChecked()) selectedDays.add("Friday");
+        if (sat.isChecked()) selectedDays.add("Saturday");
 
-        // Remove the last comma if it exists
-        if (markedDays.length() > 0 && markedDays.charAt(markedDays.length() - 1) == ',') {
-            markedDays.deleteCharAt(markedDays.length() - 1);
-        }
+        // Join the selected days
+        String daysString = TextUtils.join(",", selectedDays);
 
         // Prepare data to be saved
-        Map<String, String> reminderData = new HashMap<>();
+        Map<String, Object> reminderData = new HashMap<>();
         reminderData.put("title", "Morning Reminder");
         reminderData.put("time", time);
-        reminderData.put("days", markedDays.toString());
+        reminderData.put("days", daysString);
+        reminderData.put("isRemoved", false);
+        reminderData.put("isPassed", false);
 
         // Retrieve user ID from Intent
         userId = getIntent().getStringExtra(ARG_USER_ID);
-
         if (userId == null) {
             Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Initialize FirebaseAuth and DatabaseReference
-        mAuth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Reminders").child(userId).child("morning_reminder");
-
         // Save to Firebase
-        databaseReference.setValue(reminderData).addOnCompleteListener(task -> {
+        databaseReference.child(userId).child("morning_reminder").setValue(reminderData).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Toast.makeText(MorningReminder.this, "Reminder set successfully", Toast.LENGTH_SHORT).show();
+                finish(); // Optionally finish the activity after success
             } else {
+                Log.e("MorningReminder", "Failed to set reminder", task.getException());
                 Toast.makeText(MorningReminder.this, "Failed to set reminder", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 }
 

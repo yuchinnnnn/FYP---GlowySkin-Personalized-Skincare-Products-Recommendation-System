@@ -143,10 +143,12 @@ public class AfternoonReminder extends AppCompatActivity {
         }
 
         // Prepare data to be saved
-        Map<String, String> reminderData = new HashMap<>();
+        Map<String, Object> reminderData = new HashMap<>();
         reminderData.put("title", "Afternoon Reminder");
         reminderData.put("time", time);
         reminderData.put("days", markedDays.toString());
+        reminderData.put("isRemoved", false);
+        reminderData.put("isPassed", false);
 
         // Retrieve user ID from Intent
         userId = getIntent().getStringExtra(ARG_USER_ID);

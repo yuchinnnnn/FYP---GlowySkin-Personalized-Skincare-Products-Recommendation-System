@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.ParseException;
@@ -51,9 +52,9 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
             // Check if the reminder time has passed
             if (hasReminderTimePassed(reminder)) {
-                // Change text color to indicate the reminder has passed
-                holder.reminderText.setTextColor(Color.RED);
+                holder.notificationLayout.setBackgroundColor(Color.parseColor("#EDEDED")); // Gray out background for passed reminders
             } else {
+                holder.notificationLayout.setBackgroundColor(Color.WHITE); // Reset for active reminders
                 holder.reminderText.setTextColor(Color.BLACK);
             }
         } else {
@@ -63,17 +64,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         }
     }
 
+
     @Override
     public int getItemCount() {
         return remindersList.size();
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView sunImageView;
         TextView reminderTitle, reminderText;
+        ConstraintLayout notificationLayout;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            notificationLayout = itemView.findViewById(R.id.notification_layout);
             sunImageView = itemView.findViewById(R.id.sun);
             reminderTitle = itemView.findViewById(R.id.reminder_title);
             reminderText = itemView.findViewById(R.id.text);
@@ -104,16 +113,32 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     private boolean isReminderForToday(Reminder reminder) {
-        String[] daysOfWeek = reminder.getDays().split(",");
+        String days = reminder.getDays();
+
+        // Log the days to debug
+        Log.d("NotificationAdapter", "Reminder title: " + reminder.getTitle() + ", Days: " + days);
+
+        // Handle null or empty days
+        if (days == null || days.isEmpty()) {
+            Log.e("NotificationAdapter", "Reminder days are null or empty for reminder: " + reminder.getTitle());
+            return false; // Skip this reminder
+        }
+
+        String[] daysOfWeek = days.split(",");
         int today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        Log.d("NotificationAdapter", "Today is: " + today);
 
         for (String day : daysOfWeek) {
-            if (getDayOfWeek(day.trim().toLowerCase()) == today) {
+            int dayOfWeek = getDayOfWeek(day.trim().toLowerCase());
+            Log.d("NotificationAdapter", "Day of week: " + day.trim() + " maps to: " + dayOfWeek);
+
+            if (dayOfWeek == today) {
                 return true;
             }
         }
         return false;
     }
+
 
     private int getDayOfWeek(String day) {
         switch (day) {
@@ -153,7 +178,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     }
 
     private String getFormattedReminderText(Reminder reminder) {
-        String reminderText = username + ", Don't forget your " + reminder.getKey() + " routine at " + reminder.getTime();
+        String reminderText = "Don't forget your routine at " + reminder.getTime();
         if (hasReminderTimePassed(reminder)) {
             Spannable spannable = new SpannableString(reminderText + " (Passed)");
             spannable.setSpan(new ForegroundColorSpan(Color.RED), reminderText.length(), spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

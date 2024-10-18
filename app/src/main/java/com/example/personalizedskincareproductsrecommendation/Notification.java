@@ -71,8 +71,23 @@ public class Notification extends AppCompatActivity {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                remindersList.remove(position);  // Remove the item from the list
-                notificationAdapter.notifyItemRemoved(position);  // Notify the adapter about item removal
+                Reminder reminder = remindersList.get(position); // Get the reminder being swiped
+                String reminderKey = reminder.getKey();
+
+                // Update status to inactive
+                DatabaseReference reminderRef = FirebaseDatabase.getInstance().getReference("Reminders")
+                        .child(userId)
+                        .child(reminderKey);
+                reminderRef.child("status").setValue("inactive")
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                remindersList.remove(position);  // Remove from the list locally
+                                notificationAdapter.notifyItemRemoved(position);  // Notify the adapter
+                                Toast.makeText(Notification.this, "Reminder marked as inactive", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(Notification.this, "Failed to update reminder", Toast.LENGTH_SHORT).show();
+                            }
+                        });
             }
         });
 
@@ -95,17 +110,13 @@ public class Notification extends AppCompatActivity {
 
     private void fetchUserDataAndReminders() {
         DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
-        DatabaseReference remindersRef = FirebaseDatabase.getInstance().getReference("Reminders").child(userId);
-
         usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String username = dataSnapshot.child("username").getValue(String.class);
                 if (username != null) {
-                    notificationAdapter.updateUsername(username); // Add a method in the adapter to update the username
-                    fetchReminder(remindersRef, "morning_reminder", username);
-                    fetchReminder(remindersRef, "afternoon_reminder", username);
-                    fetchReminder(remindersRef, "night_reminder", username);
+                    notificationAdapter.updateUsername(username);
+                    fetchReminders(); // Fetch reminders
                 } else {
                     Toast.makeText(Notification.this, "Username not found.", Toast.LENGTH_SHORT).show();
                 }
@@ -116,35 +127,45 @@ public class Notification extends AppCompatActivity {
                 Toast.makeText(Notification.this, "Failed to fetch user data.", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
-    private void fetchReminder(DatabaseReference remindersRef, String reminderKey, String username) {
-        remindersRef.child(reminderKey).addListenerForSingleValueEvent(new ValueEventListener() {
+    private void fetchReminders() {
+        DatabaseReference remindersRef = FirebaseDatabase.getInstance().getReference("Reminders").child(userId);
+
+        remindersRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                MorningReminders reminder = dataSnapshot.getValue(MorningReminders.class);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                remindersList.clear(); // Clear the list before adding new data
 
-                if (reminder != null) {
-                    Log.d("Reminder", "Title: " + reminder.getTitle());
-                    Log.d("Reminder", "Time: " + reminder.getTime());
-                    Log.d("Reminder", "Days: " + reminder.getDays());
+                for (DataSnapshot reminderSnapshot : dataSnapshot.getChildren()) {
+                    // Retrieve fields from each reminder snapshot
+                    String title = reminderSnapshot.child("title").getValue(String.class);
+                    String time = reminderSnapshot.child("time").getValue(String.class);
+                    String key = reminderSnapshot.getKey();
+                    String days = reminderSnapshot.child("days").getValue(String.class);
+                    boolean isPassed = reminderSnapshot.child("isPassed").getValue(Boolean.class);
+                    boolean isRemoved = reminderSnapshot.child("isRemoved").getValue(Boolean.class);
+                    String status = reminderSnapshot.child("status").getValue(String.class);
 
-                    reminder.setKey(reminderKey);  // Set the key here
-                    remindersList.add(reminder);
-                    notificationAdapter.notifyDataSetChanged();
-                    scheduleNotification(reminder, username, reminderKey);
-                } else {
-                    Toast.makeText(Notification.this, "No reminder found for " + reminderKey, Toast.LENGTH_SHORT).show();
+                    // Create a Reminder object
+                    Reminder reminder = new Reminder(title, time, key, days, isRemoved, isPassed, status);
+                    remindersList.add(reminder); // Add to the list
+
+                    // Schedule notifications for the reminder
+                    scheduleNotification(reminder, notificationAdapter.getUsername(), key);
                 }
+
+                // Notify the adapter about data changes
+                notificationAdapter.notifyDataSetChanged();
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(Notification.this, "Failed to fetch " + reminderKey, Toast.LENGTH_SHORT).show();
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("FirebaseError", "Error fetching reminders: " + databaseError.getMessage());
             }
         });
     }
+
 
     private void scheduleNotification(Reminder reminder, String username, String reminderKey) {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
@@ -153,11 +174,15 @@ public class Notification extends AppCompatActivity {
             Calendar reminderTime = Calendar.getInstance();
             reminderTime.setTime(sdf.parse(reminder.getTime()));
 
-            // Adjust the time for the reminder (subtract 10 minutes)
-            reminderTime.add(Calendar.MINUTE, -10);
+            // Get the current time and day
+            Calendar now = Calendar.getInstance();
 
-            // Split the days of the week
-            String[] daysOfWeek = reminder.getDays().split(",");
+            String daysString = reminder.getDays();
+            if (daysString == null || daysString.isEmpty()) {
+                Log.e("Notification", "Days are null or empty for reminder: " + reminder.getTitle());
+                return; // Or handle accordingly
+            }
+            String[] daysOfWeek = daysString.split(",");
 
             for (String day : daysOfWeek) {
                 int dayOfWeek = getDayOfWeek(day.trim().toLowerCase());
@@ -167,14 +192,21 @@ public class Notification extends AppCompatActivity {
                     continue;
                 }
 
-                Calendar now = Calendar.getInstance();
                 Calendar scheduledReminderTime = (Calendar) reminderTime.clone();
 
                 // Calculate the next occurrence of the reminder day
                 while (scheduledReminderTime.get(Calendar.DAY_OF_WEEK) != dayOfWeek || scheduledReminderTime.before(now)) {
-                    scheduledReminderTime.add(Calendar.DATE, 1);
+                    scheduledReminderTime.add(Calendar.DATE, 1); // Move to the next week
                 }
 
+                // Check if the scheduled time is before now (for the current day)
+                if (scheduledReminderTime.get(Calendar.DAY_OF_WEEK) == now.get(Calendar.DAY_OF_WEEK) &&
+                        scheduledReminderTime.getTimeInMillis() < now.getTimeInMillis()) {
+                    // Already missed today's reminder, but keep it for next week
+                    continue; // Skip scheduling for this day
+                }
+
+                // Create the intent and pending intent
                 Intent intent = new Intent(Notification.this, NotificationReceiver.class);
                 intent.putExtra("reminderMessage", username + ", Don't forget your " + reminderKey + " routine at " + reminder.getTime() + "!");
 
@@ -187,7 +219,7 @@ public class Notification extends AppCompatActivity {
 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 if (alarmManager != null) {
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, scheduledReminderTime.getTimeInMillis(), pendingIntent);
+                    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, scheduledReminderTime.getTimeInMillis(), pendingIntent);
                 }
             }
         } catch (Exception e) {
@@ -195,6 +227,7 @@ public class Notification extends AppCompatActivity {
             Toast.makeText(this, "Failed to schedule notification.", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // Helper method to map day names to Calendar.DAY_OF_WEEK values
     private int getDayOfWeek(String day) {

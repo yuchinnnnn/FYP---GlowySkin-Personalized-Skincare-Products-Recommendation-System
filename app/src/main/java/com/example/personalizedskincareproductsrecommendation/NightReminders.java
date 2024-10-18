@@ -3,7 +3,10 @@ package com.example.personalizedskincareproductsrecommendation;
 public class NightReminders extends Reminder {
     private String title;
     private String time;
+    private String key;
     private String days;
+    private String status;
+    private Boolean isRemoved, isPassed;
 
     // No-argument constructor required by Firebase
     public NightReminders() {
@@ -12,14 +15,16 @@ public class NightReminders extends Reminder {
     }
 
     // Constructor with parameters
-    public NightReminders(String title, String time, String key, String days) {
-        super(title, time, null, days); // Pass the title, time, and a null key to the superclass
+    public NightReminders(String title, String time, String key, String days, Boolean isRemoved, Boolean isPassed, String status) {
         this.title = title;
         this.time = time;
+        this.key = key;  // Initialize the key field
         this.days = days;
+        this.isRemoved = isRemoved;
+        this.isPassed = isPassed;
+        this.status = status;
     }
 
-    // Getters and Setters
     public String getTitle() {
         return title;
     }
@@ -27,6 +32,8 @@ public class NightReminders extends Reminder {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    // Getters and Setters
     public String getTime() {
         return time;
     }
@@ -42,4 +49,23 @@ public class NightReminders extends Reminder {
     public void setDays(String days) {
         this.days = days;
     }
+
+    public Boolean getIsRemoved() {
+        return isRemoved;
+    }
+
+    public void setIsRemoved(Boolean isRemoved) {
+        this.isRemoved = isRemoved;
+    }
+
+    public Boolean getIsPassed() {
+        return isPassed;
+    }
+
+    public void setIsPassed(Boolean isPassed) {
+        this.isPassed = isPassed;
+    }
+
+    public String getStatus() {return status;}
+    public void setStatus(String status) {this.status = status;}
 }
