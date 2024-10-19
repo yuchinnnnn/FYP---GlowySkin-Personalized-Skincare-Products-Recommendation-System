@@ -18,10 +18,16 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewH
 
     private Context context;
     private List<String> imageUrls;
+    private OnImageDeleteListener onImageDeleteListener;
 
-    public ImagesAdapter(Context context, List<String> imageUrls) {
+    public interface OnImageDeleteListener {
+        void onImageDelete(String imageUrl);
+    }
+
+    public ImagesAdapter(Context context, List<String> imageUrls, OnImageDeleteListener listener) {
         this.context = context;
         this.imageUrls = imageUrls;
+        this.onImageDeleteListener = listener;
     }
 
     @NonNull
@@ -39,6 +45,10 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewH
                 .load(imageUrl)
                 .placeholder(R.drawable.baseline_image_24) // Optional placeholder
                 .into(holder.imageView);
+
+        holder.removeImageButton.setOnClickListener(v -> {
+            onImageDeleteListener.onImageDelete(imageUrl); // Notify listener to delete the image
+        });
     }
 
     @Override
@@ -48,10 +58,12 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.ImageViewH
 
     public static class ImageViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
+        ImageView removeImageButton;
 
         public ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.item_image_view);
+            removeImageButton = itemView.findViewById(R.id.remove_image_button);
         }
     }
 }

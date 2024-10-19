@@ -3,10 +3,12 @@ package com.example.personalizedskincareproductsrecommendation;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -20,6 +22,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +38,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,7 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class AdminEditContent extends AppCompatActivity {
+public class AdminEditContent extends AppCompatActivity implements ImagesAdapter.OnImageDeleteListener {
     private FirebaseAuth mAuth;
     private String userId;
     public static final String ARG_USER_ID = "userId";
@@ -51,7 +58,9 @@ public class AdminEditContent extends AppCompatActivity {
     private List<String> imageUrls;
     private ImagesAdapter imagesAdapter;
     private ImageButton addImage, replaceImage;
-    private ImageView back, delete;
+    private ImageView back, delete, coverImage;
+    private CardView uploadCoverButton;
+    private Boolean isCoverImage = false;
     private static final int PICK_IMAGE_REQUEST = 1;
     private Uri imageUri;
     private String contentId; // Assuming the ID of the content is passed in the intent
@@ -91,12 +100,21 @@ public class AdminEditContent extends AppCompatActivity {
         uploadDateView = findViewById(R.id.upload_date_value);
         saveButton = findViewById(R.id.save_button);
         imagesRecyclerView = findViewById(R.id.images_recycler_view);
+        coverImage = findViewById(R.id.cover_image);
         addImage = findViewById(R.id.add_image);
         replaceImage = findViewById(R.id.replace_image);
+        uploadCoverButton = findViewById(R.id.reupload_button);
+
+        uploadCoverButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openImagePickerForCover();
+            }
+        });
 
         // Initialize RecyclerView for displaying images
         imageUrls = new ArrayList<>();
-        imagesAdapter = new ImagesAdapter(this, imageUrls);  // You'll need to create this adapter class
+        imagesAdapter = new ImagesAdapter(this, imageUrls, this);  // You'll need to create this adapter class
         imagesRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         imagesRecyclerView.setAdapter(imagesAdapter);
 
@@ -123,16 +141,19 @@ public class AdminEditContent extends AppCompatActivity {
         addImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openImagePicker();
+                isCoverImage = false;  // Reset to false for regular images
+                openImagePicker();  // Open image picker for regular images
             }
         });
 
         replaceImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openImagePicker();
+                isCoverImage = true;  // Set to true for cover image
+                openImagePickerForCover();  // Open image picker for cover image
             }
         });
+
 
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,12 +163,20 @@ public class AdminEditContent extends AppCompatActivity {
         });
     }
 
+    private void openImagePickerForCover() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Cover Image"), PICK_IMAGE_REQUEST);
+    }
+
     private void openImagePicker() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -155,7 +184,13 @@ public class AdminEditContent extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
                 && data != null && data.getData() != null) {
             imageUri = data.getData();  // Get the image URI
-            uploadImageToFirebase(imageUri);  // Upload the image to Firebase Storage
+
+            // Check if we are uploading the cover image or other images
+            if (isCoverImage) {
+                uploadCoverImageToFirebase(imageUri);  // Upload the cover image to Firebase Storage
+            } else {
+                uploadImageToFirebase(imageUri);  // Upload other images
+            }
         }
     }
 
@@ -192,6 +227,63 @@ public class AdminEditContent extends AppCompatActivity {
         }
     }
 
+    private void uploadCoverImageToFirebase(Uri imageUri) {
+        if (imageUri != null) {
+            // Define storage path for cover image (e.g., "Skincare_tips_image/userId/contentId_cover.jpg")
+            StorageReference fileReference = FirebaseStorage.getInstance()
+                    .getReference("Skincare_tips_image")
+                    .child(userId + "/" + contentId + "_cover.jpg");
+
+            // Upload the cover image
+            fileReference.putFile(imageUri)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // Get the download URL of the uploaded file
+                            fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                @Override
+                                public void onSuccess(Uri uri) {
+                                    String downloadUrl = uri.toString();
+                                    saveCoverImageUrlToDatabase(downloadUrl);  // Save cover image URL to Firebase Database
+                                }
+                            });
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(AdminEditContent.this, "Cover image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else {
+            Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveCoverImageUrlToDatabase(String downloadUrl) {
+        if (contentId != null) {
+            // Reference to the content item in Firebase
+            DatabaseReference contentRef = FirebaseDatabase.getInstance().getReference("SkincareTips").child(contentId);
+
+            // Update the cover image URL in Firebase
+            contentRef.child("coverImage").setValue(downloadUrl)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(AdminEditContent.this, "Cover image updated successfully", Toast.LENGTH_SHORT).show();
+                            // Load the new cover image in the UI
+                            Glide.with(AdminEditContent.this).load(downloadUrl).into(coverImage);
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(AdminEditContent.this, "Failed to update cover image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
+    }
+
     private void saveImageUrlToDatabase(String downloadUrl) {
         if (contentId != null) {
             // Reference to the content item in Firebase
@@ -223,6 +315,44 @@ public class AdminEditContent extends AppCompatActivity {
                     String description = dataSnapshot.child("description").getValue(String.class);
                     String uploadDate = dataSnapshot.child("uploadDateTime").getValue(String.class);
 
+                    SimpleDateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                    SimpleDateFormat targetFormat = new SimpleDateFormat("EEE, MMM d yyyy", Locale.getDefault());
+                    Date date = null;
+                    try {
+                        date = originalFormat.parse(uploadDate);
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MMM d yyyy", Locale.getDefault());
+                        uploadDate = dateFormat.format(date);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    uploadDate = targetFormat.format(date);
+
+                    // Assuming title contains spaces or special characters
+                    String coverImageFilename = (title + "_cover.jpg").replace(" ", "_"); // Replace spaces with underscores
+
+                    String storageUrl = "https://firebasestorage.googleapis.com/v0/b/personalized-skincare-products.appspot.com/o/Skincare_tips_image%2F"
+                            + Uri.encode(userId) + "%2F" + Uri.encode(coverImageFilename) + "?alt=media";
+
+
+                    Log.d("storageUrl", storageUrl);
+
+                    Glide.with(AdminEditContent.this)
+                            .load(storageUrl)
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    Log.e("Glide Error", "Failed to load image: " + e.getMessage());
+                                    return false; // Important to return false so the error placeholder can be set
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                    return false;
+                                }
+                            })
+                            .into(coverImage);
+
+
                     // Set text fields
                     editTitle.setText(title);
                     editDescription.setText(description);
@@ -240,6 +370,8 @@ public class AdminEditContent extends AppCompatActivity {
 
                     // Notify adapter that data has changed
                     imagesAdapter.notifyDataSetChanged();
+
+
                 } else {
                     Toast.makeText(AdminEditContent.this, "Content not found", Toast.LENGTH_SHORT).show();
                 }
@@ -248,6 +380,49 @@ public class AdminEditContent extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Log.e("Firebase", "Error fetching data", databaseError.toException());
+            }
+        });
+    }
+    @Override
+    public void onImageDelete(String imageUrl) {
+        // Call the function to delete the image
+        deleteImageFromFirebase(imageUrl);
+    }
+
+    private void deleteImageFromFirebase(String imageUrl) {
+        // Get the reference to the image in Firebase Storage
+        StorageReference imageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl);
+
+        // Delete the image from Firebase Storage
+        imageRef.delete().addOnSuccessListener(aVoid -> {
+            // Delete the image URL from Firebase Database
+            removeImageUrlFromDatabase(imageUrl);
+        }).addOnFailureListener(e -> {
+            Toast.makeText(AdminEditContent.this, "Failed to delete image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("Firebase", "Failed to delete image", e);
+        });
+    }
+
+    private void removeImageUrlFromDatabase(String imageUrl) {
+        DatabaseReference contentRef = FirebaseDatabase.getInstance().getReference("SkincareTips").child(contentId);
+
+        // Query to find the image URL and remove it
+        contentRef.child("images").orderByValue().equalTo(imageUrl).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    snapshot.getRef().removeValue(); // Remove the URL from the database
+                }
+                Toast.makeText(AdminEditContent.this, "Image deleted successfully", Toast.LENGTH_SHORT).show();
+
+                // Remove the image from local list and notify the adapter
+                imageUrls.remove(imageUrl);
+                imagesAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Firebase", "Failed to delete image URL", databaseError.toException());
             }
         });
     }

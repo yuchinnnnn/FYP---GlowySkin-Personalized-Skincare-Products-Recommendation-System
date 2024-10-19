@@ -16,6 +16,8 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.Collections;
 import java.util.List;
@@ -47,15 +49,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
         holder.title.setText(content.getTitle());
         holder.date.setText(content.getUploadDateTime());
 
-        // Load the first image from the list, if available
-        List<String> imageUrls = content.getImageUrls();
-        if (imageUrls != null && !imageUrls.isEmpty()) {
+        // Construct the full URL for the cover image from the Firebase Storage path
+        String coverImage = content.getCoverImage();
+        String userId = content.getUserId(); // Assuming each content has a userId field
+
+        if (coverImage != null && !coverImage.isEmpty()) {
+            // Construct the full Firebase Storage URL for the cover image
+            String storageUrl = "https://firebasestorage.googleapis.com/v0/b/personalized-skincare-products.appspot.com/o/Skincare_tips_image%2F"
+                    + userId + "%2F" + coverImage + "?alt=media";
+
             Glide.with(context)
-                    .load(imageUrls.get(0))  // Load the first image in the list
+                    .load(storageUrl)  // Load the full URL
                     .into(holder.imageView);
         } else {
-            // Set a default image if no images are available
-            holder.imageView.setImageResource(R.drawable.baseline_image_24);  // Replace with your placeholder image
+            // Set a default image if no cover image is available
+            holder.imageView.setImageResource(R.drawable.baseline_image_24);  // Placeholder image
         }
 
         // Set Edit button click listener

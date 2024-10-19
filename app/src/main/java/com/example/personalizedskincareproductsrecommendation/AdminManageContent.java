@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -30,6 +31,7 @@ public class AdminManageContent extends AppCompatActivity {
     private String userId;
     public static final String ARG_USER_ID = "userId";
     private ImageView back;
+    private ImageButton add;
     private RecyclerView recyclerView;
     private ContentAdapter contentAdapter;
     private List<Content> contentList;
@@ -58,6 +60,16 @@ public class AdminManageContent extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(AdminManageContent.this, AdminDashboard.class);
                 intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
+                startActivity(intent);
+            }
+        });
+
+        add = findViewById(R.id.add_button);
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(AdminManageContent.this, AdminAddContent.class);
+                intent.putExtra(AdminAddContent.ARG_USER_ID, userId);
                 startActivity(intent);
             }
         });
@@ -103,18 +115,18 @@ public class AdminManageContent extends AppCompatActivity {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Content content = snapshot.getValue(Content.class);
 
-                    // Fetch the images node (a list of URLs)
-                    List<String> imageUrls = new ArrayList<>();
-                    DataSnapshot imagesSnapshot = snapshot.child("images");
+                    if (content != null) {
+                        // Fetch the coverImage value
+                        String coverImage = snapshot.child("coverImage").getValue(String.class);
 
-                    for (DataSnapshot imageSnapshot : imagesSnapshot.getChildren()) {
-                        String imageUrl = imageSnapshot.getValue(String.class);
-                        imageUrls.add(imageUrl);
+                        // Set the coverImage if available
+                        if (coverImage != null) {
+                            content.setCoverImage(coverImage);
+                        }
+
+                        // Add the content object to the list
+                        contentList.add(content);
                     }
-
-                    content.setImageUrls(imageUrls);  // Set the image URLs for this content
-
-                    contentList.add(content);  // Add content to the list
                 }
 
                 // Initially show all content
@@ -128,6 +140,7 @@ public class AdminManageContent extends AppCompatActivity {
             }
         });
     }
+
 
     // Filter content based on search query
     private void filterContent(String query) {

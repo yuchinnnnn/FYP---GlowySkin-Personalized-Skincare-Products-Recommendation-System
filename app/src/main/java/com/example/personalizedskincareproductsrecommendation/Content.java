@@ -5,6 +5,7 @@ import java.util.List;
 public class Content {
     private String title, uploadDateTime, userId, id;
     private List<String> imageUrls;
+    private String coverImage;
 
     // Required empty constructor for Firebase
     public Content() {}
@@ -49,5 +50,8 @@ public class Content {
 
     public List<String> getImageUrls() { return imageUrls; }
     public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
+
+    public String getCoverImage() { return coverImage; }
+    public void setCoverImage(String coverImage) { this.coverImage = coverImage; }
 }
 

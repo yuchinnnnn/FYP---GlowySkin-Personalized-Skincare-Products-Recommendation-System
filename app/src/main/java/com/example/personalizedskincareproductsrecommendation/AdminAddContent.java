@@ -18,8 +18,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -43,42 +44,55 @@ import java.time.format.DateTimeFormatter;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 import android.widget.ArrayAdapter;
+
 public class AdminAddContent extends AppCompatActivity {
     private FirebaseAuth mAuth;
-    private String userId;
+    private String userId, coverImageUrl;
     public static final String ARG_USER_ID = "userId";
     private AutoCompleteTextView categoryDropdown; // category dropdown
-    private ImageView back, uploadedImage;
+    private ImageView back, uploadedImage, cancelCoverImage;
     private TextInputEditText title, description;
-    private Button uploadImageButton, uploadButton, cancelButton;
+    private Button uploadImageButton, postButton, cancelButton;
     private List<Uri> uploadedImages = new ArrayList<>();
+    private String uploadedCoverImage = null;
+    private LinearLayout uploadCoverButton, uploadedCover;
+    private TextView coverImageLabel;
 
     private DatabaseReference databaseReference, skincareTipsDatabaseReference;
+    private StorageReference storageReference;
 
+    // Flag to check if the cover image is being uploaded
+    private boolean isCoverImageUpload = false;
 
-    StorageReference storageReference;
-    Uri imageUri;
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        uploadedImages.clear(); // Create a List<Uri> uploadedImages to store image Uris
-                        if (result.getData().getClipData() != null) {
-                            int count = result.getData().getClipData().getItemCount();
-                            for (int i = 0; i < count; i++) {
-                                Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
-                                uploadedImages.add(imageUri); // Add each image Uri to the list
-                            }
-                        } else if (result.getData().getData() != null) {
+                        if (isCoverImageUpload) {
                             Uri imageUri = result.getData().getData();
-                            uploadedImages.add(imageUri); // If a single image was selected
-                        }
-                        // Display the first image or show a count of selected images
-                        if (!uploadedImages.isEmpty()) {
-                            uploadedImage.setImageURI(uploadedImages.get(0)); // Show the first image as a preview
-                            Toast.makeText(AdminAddContent.this, uploadedImages.size() + " images selected.", Toast.LENGTH_SHORT).show();
+                            if (imageUri != null) {
+                                uploadCoverImage(imageUri); // Upload the cover image
+                            }
+                            isCoverImageUpload = false; // Reset the flag
+                        } else {
+                            uploadedImages.clear(); // Clear previous images
+                            if (result.getData().getClipData() != null) {
+                                int count = result.getData().getClipData().getItemCount();
+                                for (int i = 0; i < count; i++) {
+                                    Uri imageUri = result.getData().getClipData().getItemAt(i).getUri();
+                                    uploadedImages.add(imageUri); // Add each image Uri to the list
+                                }
+                            } else if (result.getData().getData() != null) {
+                                Uri imageUri = result.getData().getData();
+                                uploadedImages.add(imageUri); // If a single image was selected
+                            }
+                            // Display the first image or show a count of selected images
+                            if (!uploadedImages.isEmpty()) {
+                                uploadedImage.setImageURI(uploadedImages.get(0)); // Show the first image as a preview
+                                Toast.makeText(AdminAddContent.this, uploadedImages.size() + " images selected.", Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
                 }
@@ -103,27 +117,18 @@ public class AdminAddContent extends AppCompatActivity {
         storageReference = FirebaseStorage.getInstance().getReference("Skincare_tips_image").child(userId);
 
         back = findViewById(R.id.back);
-        back.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
-                intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
-                startActivity(intent);
-            }
+        back.setOnClickListener(view -> {
+            Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+            intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
+            startActivity(intent);
         });
 
         skincareTipsDatabaseReference = FirebaseDatabase.getInstance().getReference("SkincareTips");
 
         categoryDropdown = findViewById(R.id.hint_text);
-        // Define the list of categories (hardcoded or retrieved from database)
-        String[] categories = new String[] {"For All Skin Type", "For Oily Skin", "For Dry Skin", "For Combination Skin", "For Sensitive Skin"};
-
-        // Create an ArrayAdapter using the string array and a default spinner layout
+        String[] categories = new String[]{"For All Skin Type", "For Oily Skin", "For Dry Skin", "For Combination Skin", "For Sensitive Skin"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories);
-
-        // Set the adapter to the AutoCompleteTextView
         categoryDropdown.setAdapter(adapter);
-        String selectedCategory = categoryDropdown.getText().toString();
 
         title = findViewById(R.id.title);
         description = findViewById(R.id.description);
@@ -133,9 +138,8 @@ public class AdminAddContent extends AppCompatActivity {
         uploadImageButton.setOnClickListener(v -> showUploadImageDialog());
         loadUploadedImage(userId);
 
-
-        uploadButton = findViewById(R.id.UploadButton);
-        uploadButton.setOnClickListener(v -> {
+        postButton = findViewById(R.id.PostButton);
+        postButton.setOnClickListener(v -> {
             String titleText = title.getText().toString().trim();
             String descriptionText = description.getText().toString().trim();
             String category = categoryDropdown.getText().toString().trim(); // Get category
@@ -157,13 +161,86 @@ public class AdminAddContent extends AppCompatActivity {
                 return;
             }
 
-            // Save the content
-            saveContent(selectedCategory, titleText, descriptionText);
+            if (uploadedCoverImage == null || uploadedCoverImage.isEmpty()) {
+                Toast.makeText(AdminAddContent.this, "Please upload cover image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (uploadedImages.isEmpty()) {
+                Toast.makeText(AdminAddContent.this, "Please upload at least one image", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             showConfirmationDialog();
 
+            // Save the content
+            saveContent(category, titleText, descriptionText);
         });
 
         cancelButton = findViewById(R.id.CancelButton);
+        cancelButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+            intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
+            startActivity(intent);
+        });
+
+        // For cover image
+        uploadCoverButton = findViewById(R.id.upload_cover_button);
+        uploadCoverButton.setOnClickListener(v -> {
+            isCoverImageUpload = true; // Set the flag for cover image
+            showUploadCoverDialog();
+        });
+
+        uploadedCover = findViewById(R.id.uploaded_cover);
+
+        coverImageLabel = findViewById(R.id.uploaded_cover_url);
+        cancelCoverImage = findViewById(R.id.cancel_cover_image);
+
+    }
+
+    private void showUploadCoverDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Cover Image");
+        builder.setPositiveButton("Yes", (dialog, which) -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            activityResultLauncher.launch(Intent.createChooser(intent, "Select Cover Photo"));
+        });
+        builder.setNegativeButton("No", (dialog, which) -> dialog.cancel());
+        builder.show();
+    }
+
+    private void uploadCoverImage(Uri imageUri) {
+        String tipsTitle = title.getText().toString().trim().replaceAll("\\s+", "_"); // Replace spaces with underscores
+        String coverImageName = tipsTitle + "_cover.jpg"; // Format: tipsTitle_cover.jpg
+        StorageReference coverImageRef = storageReference.child(coverImageName);
+
+        coverImageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    coverImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        coverImageUrl = coverImageName;
+                        uploadedCoverImage = coverImageUrl;
+                        uploadCoverButton.setVisibility(View.GONE);
+                        uploadedCover.setVisibility(View.VISIBLE);
+                        coverImageLabel.setVisibility(View.VISIBLE);
+                        coverImageLabel.setText(coverImageUrl); // Show the URL
+
+                        // Show cancel button and set up its click listener
+                        cancelCoverImage.setVisibility(View.VISIBLE);
+                        cancelCoverImage.setOnClickListener(v -> {
+                            // Clear the cover image and reset the view
+                            coverImageUrl = null; // Clear cover image URL
+                            coverImageLabel.setText(""); // Clear the label
+                            uploadCoverButton.setVisibility(View.VISIBLE); // Show the upload button again
+                            uploadedCover.setVisibility(View.GONE); // Hide the uploaded cover section
+                            cancelCoverImage.setVisibility(View.GONE); // Hide the cancel button
+                        });
+                        Log.d(TAG, "Cover image uploaded successfully: " + coverImageUrl);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to upload cover image: " + e.getMessage());
+                });
     }
 
     private void showUploadImageDialog() {
@@ -184,14 +261,11 @@ public class AdminAddContent extends AppCompatActivity {
         sweetAlertDialog.setTitle("Upload Successful");
         sweetAlertDialog.setContentText("Your content has been uploaded successfully.");
         sweetAlertDialog.setConfirmText("OK");
-        sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
-            @Override
-            public void onClick(SweetAlertDialog sDialog) {
-                sDialog.dismissWithAnimation();
-                Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
-                intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
-                startActivity(intent);
-            }
+        sweetAlertDialog.setConfirmClickListener(sDialog -> {
+            sDialog.dismissWithAnimation();
+            Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+            intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
+            startActivity(intent);
         });
         sweetAlertDialog.show();
         title.setText("");
@@ -243,7 +317,7 @@ public class AdminAddContent extends AppCompatActivity {
         // Get current date and time
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        String formattedDateTime = now.format(formatter); // e.g., 2023-09-28 14:30:15
+        String formattedDateTime = now.format(formatter);
 
         // Generate a unique key for each skincare tip
         String tipId = skincareTipsDatabaseReference.push().getKey();
@@ -252,11 +326,16 @@ public class AdminAddContent extends AppCompatActivity {
             // Prepare the data to save, including the userId and current date/time
             Map<String, Object> tipsData = new HashMap<>();
             tipsData.put("id", tipId);
-            tipsData.put("category", tipsCategory); // Save the category
+            tipsData.put("category", tipsCategory);
             tipsData.put("title", tipsTitle);
             tipsData.put("description", tipsDescription);
-            tipsData.put("userId", userId);  // Add userId of the admin who uploads the tips
-            tipsData.put("uploadDateTime", formattedDateTime); // Store current date/time
+            tipsData.put("userId", userId);
+            tipsData.put("uploadDateTime", formattedDateTime);
+
+            // Save the cover image file name if it exists
+            if (coverImageUrl != null) {
+                tipsData.put("coverImage", coverImageUrl); // Save only the file name
+            }
 
             // Save the tips data under the unique key in the "SkincareTips" node
             skincareTipsDatabaseReference.child(tipId).updateChildren(tipsData)
@@ -302,5 +381,4 @@ public class AdminAddContent extends AppCompatActivity {
             });
         }
     }
-
 }
