@@ -49,6 +49,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             holder.reminderTitle.setText(reminder.getTitle());
             holder.reminderText.setText(getFormattedReminderText(reminder));
             holder.sunImageView.setImageResource(getIconForReminderKey(reminder.getKey()));
+            holder.defaultText.setVisibility(View.GONE);
 
             // Check if the reminder time has passed
             if (hasReminderTimePassed(reminder)) {
@@ -76,7 +77,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView sunImageView;
-        TextView reminderTitle, reminderText;
+        TextView reminderTitle, reminderText, defaultText;
         ConstraintLayout notificationLayout;
 
         public ViewHolder(@NonNull View itemView) {
@@ -86,6 +87,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             sunImageView = itemView.findViewById(R.id.sun);
             reminderTitle = itemView.findViewById(R.id.reminder_title);
             reminderText = itemView.findViewById(R.id.text);
+
+            defaultText = itemView.findViewById(R.id.default_text);
         }
     }
 

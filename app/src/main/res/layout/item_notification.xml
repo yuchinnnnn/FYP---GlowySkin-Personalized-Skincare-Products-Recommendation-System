@@ -45,4 +45,6 @@
         app:layout_constraintTop_toBottomOf="@id/reminder_title"
         app:layout_constraintStart_toStartOf="@id/reminder_title"
         android:paddingTop="5dp"/>
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
