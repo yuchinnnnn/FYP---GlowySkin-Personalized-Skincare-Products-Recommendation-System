@@ -44,9 +44,7 @@ public class AdminManageProfile extends AppCompatActivity {
         // Initialize back button
         back = findViewById(R.id.back);
         back.setOnClickListener(view -> {
-            Intent intent = new Intent(AdminManageProfile.this, AdminDashboard.class);
-            intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
-            startActivity(intent);
+            finish();
         });
 
         // Initialize the ViewPager and TabLayout
@@ -64,7 +62,6 @@ public class AdminManageProfile extends AppCompatActivity {
         // Add Fragments for Active and Deactivated Users
         adapter.addFragment(new ActiveUsers(), "Active Users");
         adapter.addFragment(new DeactivatedUser(), "Deactivated Users");
-        adapter.addFragment(new ToApproveUser(), "To Approve Users");
 
         viewPager.setAdapter(adapter);
     }

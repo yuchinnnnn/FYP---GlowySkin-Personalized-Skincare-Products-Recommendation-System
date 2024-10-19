@@ -7,10 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -29,6 +32,8 @@ public class DeactivatedUser extends Fragment {
     private List<Users> deactivatedUserListData;
     private UserAdapter deactivatedUserAdapter;
     private DatabaseReference userReference;
+    private AutoCompleteTextView search;
+
 
     @Nullable
     @Override
@@ -39,6 +44,20 @@ public class DeactivatedUser extends Fragment {
         deactivatedUserListData = new ArrayList<>();
         deactivatedUserAdapter = new UserAdapter(getContext(), deactivatedUserListData);
         deactivatedUserList.setAdapter(deactivatedUserAdapter);
+
+        search = rootView.findViewById(R.id.hint_text);
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                filterContent(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
 
         userReference = FirebaseDatabase.getInstance().getReference("Users");
 
@@ -83,5 +102,19 @@ public class DeactivatedUser extends Fragment {
                 Toast.makeText(getContext(), "Failed to load deactivated users.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void filterContent(String searchText) {
+        List<Users> filteredList = new ArrayList<>();
+
+        for (Users user : deactivatedUserListData) {
+            // Assuming Users has a getUsername() method to get the username
+            if (user.getUsername().toLowerCase().contains(searchText.toLowerCase())) {
+                filteredList.add(user);
+            }
+        }
+
+        // Update the adapter with the filtered list
+        deactivatedUserAdapter.updateList(filteredList);
     }
 }

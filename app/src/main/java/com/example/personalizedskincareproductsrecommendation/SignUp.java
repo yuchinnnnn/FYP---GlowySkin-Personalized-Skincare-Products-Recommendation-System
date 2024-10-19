@@ -86,6 +86,7 @@ public class SignUp extends AppCompatActivity {
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String userId = mAuth.getUid();
                 String username = signupUsername.getText().toString().trim();
                 String email = signupEmail.getText().toString().trim();
                 String pass = signupPassword.getText().toString().trim();
@@ -115,10 +116,10 @@ public class SignUp extends AppCompatActivity {
 
                 // Check if the user is registering as an admin by checking if "admin" is in the email
                 if (email.contains("admin")) {
-                    promptForAdminCode(username, email, hashedPassword);
+                    promptForAdminCode(userId, username, email, hashedPassword);
                 } else {
                     // Register as a normal user
-                    registerUser(username, email, hashedPassword, "user");
+                    registerUser(userId, username, email, hashedPassword, "user", "active");
                 }
             }
         });
@@ -150,7 +151,7 @@ public class SignUp extends AppCompatActivity {
     }
 
 
-    private void promptForAdminCode(String username, String email, String password) {
+    private void promptForAdminCode(String userId, String username, String email, String password) {
         AlertDialog.Builder builder = new AlertDialog.Builder(SignUp.this);
         builder.setTitle("Admin Registration");
         builder.setMessage("Please enter the admin code:");
@@ -165,11 +166,11 @@ public class SignUp extends AppCompatActivity {
                 String adminCodeInput = input.getText().toString().trim();
                 if (adminCodeInput.equals(ADMIN_CODE)) {
                     // Correct admin code entered, register as admin in both "Users" and "Admin" tables
-                    registerAdmin(username, email, password);
+                    registerAdmin(userId, username, email, password);
                 } else if (adminCodeInput.isEmpty()) {
                     Toast.makeText(SignUp.this, "Admin code cannot be empty.", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
-                    promptForAdminCode(username, email, password);
+                    promptForAdminCode(userId, username, email, password);
                 } else {
                     // Incorrect admin code, register as normal user in "Users" table
                     Toast.makeText(SignUp.this, "Incorrect admin code. Please try again.", Toast.LENGTH_SHORT).show();
@@ -187,7 +188,7 @@ public class SignUp extends AppCompatActivity {
         builder.show();
     }
 
-    private void registerAdmin(String username, String email, String hashedPassword) {
+    private void registerAdmin(String userId, String username, String email, String hashedPassword) {
         mAuth.createUserWithEmailAndPassword(email, hashedPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -200,6 +201,7 @@ public class SignUp extends AppCompatActivity {
 
                         // Set up the data structure to be saved in Firebase
                         Map<String, Object> adminData = new HashMap<>();
+                        adminData.put("userId", userId);
                         adminData.put("username", username);
                         adminData.put("email", email);
                         adminData.put("password", hashedPassword);
@@ -223,7 +225,7 @@ public class SignUp extends AppCompatActivity {
         });
     }
 
-    private void registerUser(String username, String email, String hashedPassword, String userType) {
+    private void registerUser(String userId, String username, String email, String hashedPassword, String userType, String status) {
         mAuth.createUserWithEmailAndPassword(email, hashedPassword).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -236,10 +238,12 @@ public class SignUp extends AppCompatActivity {
 
                         // Set up the data structure to be saved in Firebase, including userType
                         Map<String, Object> userData = new HashMap<>();
+                        userData.put("userId", userId);
                         userData.put("username", username);
                         userData.put("email", email);
                         userData.put("password", hashedPassword);
                         userData.put("userType", userType);  // Adding userType for future checks
+                        userData.put("status", status);
 
                         // Other default data structures for skinQuiz, skinGoals, etc.
                         userData.put("skinQuiz", new HashMap<String, Object>());

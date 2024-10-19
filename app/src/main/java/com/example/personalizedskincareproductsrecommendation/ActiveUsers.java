@@ -5,10 +5,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -27,6 +31,7 @@ public class ActiveUsers extends Fragment {
     private List<Users> activeUserListData;
     private UserAdapter activeUserAdapter;
     private DatabaseReference userReference;
+    private AutoCompleteTextView search;
 
     @Nullable
     @Override
@@ -37,6 +42,20 @@ public class ActiveUsers extends Fragment {
         activeUserListData = new ArrayList<>();
         activeUserAdapter = new UserAdapter(getContext(), activeUserListData);
         activeUserList.setAdapter(activeUserAdapter);
+
+        search = rootView.findViewById(R.id.hint_text);
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                filterContent(charSequence.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
 
         userReference = FirebaseDatabase.getInstance().getReference("Users");
 
@@ -82,5 +101,19 @@ public class ActiveUsers extends Fragment {
                 Toast.makeText(getContext(), "Failed to load active users.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void filterContent(String searchText) {
+        List<Users> filteredList = new ArrayList<>();
+
+        for (Users user : activeUserListData) {
+            // Assuming Users has a getUsername() method to get the username
+            if (user.getUsername().toLowerCase().contains(searchText.toLowerCase())) {
+                filteredList.add(user);
+            }
+        }
+
+        // Update the adapter with the filtered list
+        activeUserAdapter.updateList(filteredList);
     }
 }
