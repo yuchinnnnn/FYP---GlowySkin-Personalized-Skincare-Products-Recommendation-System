@@ -140,21 +140,39 @@ public class Login extends AppCompatActivity {
                         String hashedPasswordFromDB = userSnapshot.child("password").getValue(String.class);
                         Log.d("Username", usernameFromDB); // Debug purpose
 
-                        // Verify password using BCrypt
-                        if (BCrypt.checkpw(userPassword, hashedPasswordFromDB)) {
-                            credentialsValid = true;
-                            loginUsername.setError(null);
-                            Intent intent = new Intent(Login.this, AdminDashboard.class);
-                            intent.putExtra("userId", userId); // Pass the user ID to Homepage
-                            startActivity(intent);
-                            Toast.makeText(Login.this, "Welcome " + usernameFromDB, Toast.LENGTH_SHORT).show();
-                            break; // Exit the loop if credentials are valid
+                        if (Objects.equals(usernameFromDB, userUsername)) {
+                            loginUsername.setError(null); // Username is valid
+
+                            // Then, check if the password matches using BCrypt
+                            if (BCrypt.checkpw(userPassword, hashedPasswordFromDB)) {
+                                credentialsValid = true;
+                                loginUsername.setError(null);
+                                loginPassword.setError(null); // Both credentials are valid
+
+                                // Proceed to the next activity (Admin Dashboard)
+                                Intent intent = new Intent(Login.this, AdminDashboard.class);
+                                intent.putExtra("userId", userId); // Pass the user ID to the next screen
+                                startActivity(intent);
+                                Toast.makeText(Login.this, "Welcome " + usernameFromDB, Toast.LENGTH_SHORT).show();
+                                break; // Exit the loop if credentials are valid
+                            } else {
+                                // Password is incorrect
+                                loginPassword.setError("Incorrect Password.");
+                                loginPassword.requestFocus();
+                                return;
+                            }
                         }
                     }
+
+                    // If no valid username and password were found
                     if (!credentialsValid) {
-                        loginPassword.setError("Invalid Credentials.");
-                        loginPassword.requestFocus();
+                        loginUsername.setError("Invalid Username or Password.");
+                        loginUsername.requestFocus();
                     }
+                } else {
+                    // Username does not exist in the Admin database
+                    loginUsername.setError("Username not found.");
+                    loginUsername.requestFocus();
                 }
             }
 

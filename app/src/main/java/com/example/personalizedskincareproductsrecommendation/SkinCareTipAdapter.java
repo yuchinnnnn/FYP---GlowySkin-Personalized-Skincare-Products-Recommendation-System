@@ -44,12 +44,24 @@ public class SkinCareTipAdapter extends RecyclerView.Adapter<SkinCareTipAdapter.
             context.startActivity(intent);
         });
 
+        String coverImage = tip.getCoverImage();
+        List<String> images = tip.getImages();
 
-        // Load the first image if available
-        if (!tip.getImages().isEmpty()) {
+        if (coverImage != null && !coverImage.isEmpty()) {
+            // Construct the full Firebase Storage URL for the cover image
+            String storageUrl = "https://firebasestorage.googleapis.com/v0/b/personalized-skincare-products.appspot.com/o/Skincare_tips_image%2F"
+                    + coverImage + "?alt=media";
+            Glide.with(context)
+                    .load(storageUrl)
+                    .into(holder.imageView);
+        }
+        else if(coverImage == null && images !=null) {
             Glide.with(context)
                     .load(tip.getImages().get(0)) // Load the first image
                     .into(holder.imageView);
+        }
+        else{
+            Toast.makeText(context, "Cover image not found", Toast.LENGTH_SHORT).show();
         }
     }
 

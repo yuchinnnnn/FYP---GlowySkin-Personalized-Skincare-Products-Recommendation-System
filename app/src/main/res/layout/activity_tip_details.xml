@@ -40,17 +40,30 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerLayout"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:text="Skin Care Tips Image: "
+            android:textColor="@color/black"
+            android:textSize="16dp"
+            android:textStyle="bold"/>
+
         <RelativeLayout
             android:id="@+id/imageLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/headerLayout">
+            app:layout_constraintTop_toBottomOf="@+id/image">
 
             <androidx.viewpager.widget.ViewPager
                 android:id="@+id/viewPager"
                 android:layout_width="match_parent"
                 android:layout_marginTop="5dp"
-                android:layout_height="300dp"/>
+                android:layout_height="310dp"/>
 
             <LinearLayout
                 android:id="@+id/sliderDots"
@@ -75,7 +88,8 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:padding="10dp">
 
                 <TextView
                     android:id="@+id/description_title"

@@ -210,11 +210,11 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
     }
 
     private void selectEnvironment(String answer, LinearLayout selectedLayout) {
-        travel.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
-        makeup.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
-        outdoor.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
-        humid.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
-        urban.setBackgroundColor(ContextCompat.getColor(this, R.color.grey));
+        travel.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
+        makeup.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
+        outdoor.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
+        humid.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
+        urban.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
 
         selectedLayout.setBackgroundColor(ContextCompat.getColor(this, R.color.pink));
         selectedEnvironment = answer;

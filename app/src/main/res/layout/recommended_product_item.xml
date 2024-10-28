@@ -44,20 +44,20 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/product_type"
+            android:id="@+id/product_function"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Product Type"
+            android:text="Function"
             android:textSize="14sp" />
 
-<!--        <ImageView-->
-<!--            android:id="@+id/edit_button"-->
-<!--            android:layout_width="20dp"-->
-<!--            android:layout_height="20dp"-->
-<!--            android:layout_marginStart="10dp"-->
-<!--            android:src="@drawable/edit"-->
-<!--            android:layout_gravity="center"/>-->
+        <!--        <ImageView-->
+        <!--            android:id="@+id/edit_button"-->
+        <!--            android:layout_width="20dp"-->
+        <!--            android:layout_height="20dp"-->
+        <!--            android:layout_marginStart="10dp"-->
+        <!--            android:src="@drawable/edit"-->
+        <!--            android:layout_gravity="center"/>-->
 
     </LinearLayout>
 

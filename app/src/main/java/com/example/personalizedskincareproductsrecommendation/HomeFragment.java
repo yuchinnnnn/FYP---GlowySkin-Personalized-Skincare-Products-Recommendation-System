@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +27,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -183,7 +186,7 @@ public class HomeFragment extends Fragment {
 
         fab.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), SkinAnalysis.class);
-            intent.putExtra(ARG_USER_ID, userId);
+            intent.putExtra("ARG_USER_ID", userId);
             startActivity(intent);
         });
 
@@ -241,6 +244,7 @@ public class HomeFragment extends Fragment {
                     String id = snapshot.getKey(); // Get the unique tip ID
                     String title = snapshot.child("title").getValue(String.class);
                     String tip = snapshot.child("tip").getValue(String.class);
+                    String coverImage = snapshot.child("coverImage").getValue(String.class);
 
                     // Get the list of images
                     List<String> imageUrls = new ArrayList<>();
@@ -252,7 +256,7 @@ public class HomeFragment extends Fragment {
                     }
 
                     // Set the id when creating the SkinCareTip object
-                    SkinCareTip skinCareTip = new SkinCareTip(title, tip, imageUrls);
+                    SkinCareTip skinCareTip = new SkinCareTip(title, tip, imageUrls, coverImage);
                     skinCareTip.setId(id); // Set the ID
                     skinCareTipsList.add(skinCareTip); // Add to the list
                 }
@@ -265,7 +269,6 @@ public class HomeFragment extends Fragment {
             }
         });
     }
-
 
     private void displaySkinGoals(List<String> skinGoalsList) {
         StringBuilder skinGoalsBuilder = new StringBuilder();

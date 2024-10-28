@@ -65,6 +65,8 @@ dependencies {
     implementation ("androidx.camera:camera-view:$camerax_version")
 
     implementation ("com.github.chrisbanes:PhotoView:2.3.0")
+    implementation ("jp.wasabeef:glide-transformations:4.3.0")
+
 
     // for password encryption
     implementation ("org.mindrot:jbcrypt:0.4")

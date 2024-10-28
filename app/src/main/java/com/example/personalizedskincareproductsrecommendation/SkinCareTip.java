@@ -3,13 +3,14 @@ package com.example.personalizedskincareproductsrecommendation;
 import java.util.List;
 
 public class SkinCareTip {
-    private String id, title, tip;
+    private String id, title, tip, coverImage;
     private List<String> images;
 
-    public SkinCareTip(String title, String tip, List<String> images) {
+    public SkinCareTip(String title, String tip, List<String> images, String coverImage) {
         this.title = title;
         this.tip = tip;
         this.images = images;
+        this.coverImage = coverImage;
     }
 
 
@@ -43,6 +44,14 @@ public class SkinCareTip {
 
     public List<String> getImages() {
         return images;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 }
 
