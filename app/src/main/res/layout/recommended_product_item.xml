@@ -6,6 +6,7 @@
     android:layout_margin="8dp">
 
     <LinearLayout
+        android:id="@+id/product_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -44,7 +45,7 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/product_function"
+            android:id="@+id/product_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

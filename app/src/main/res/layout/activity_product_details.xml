@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SkinAnalysisResult">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#F2D5D7"
+            android:gravity="top"
+            android:orientation="horizontal"
+            android:padding="20dp"
+            app:layout_constraintEnd_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/back"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/previous" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Product Information"
+                android:gravity="center_horizontal"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:textSize="20dp"/>
+
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/productImage"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerLayout"/>
+
+        <TextView
+            android:id="@+id/brandLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Product Brand:"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/productImage"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/brand"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Product Brand:"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="@id/brandLabel"
+            app:layout_constraintBottom_toBottomOf="@id/brandLabel"
+            app:layout_constraintStart_toEndOf="@id/brandLabel"/>
+
+        <TextView
+            android:id="@+id/typeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Product Type:"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/brandLabel"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Product Type:"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="@id/typeLabel"
+            app:layout_constraintBottom_toBottomOf="@id/typeLabel"
+            app:layout_constraintStart_toEndOf="@id/typeLabel"/>
+
+        <TextView
+            android:id="@+id/functionLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Product Function:"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/typeLabel"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/function"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Product function:"
+            android:textSize="14sp"
+            app:layout_constraintTop_toTopOf="@id/functionLabel"
+            app:layout_constraintBottom_toBottomOf="@id/functionLabel"
+            app:layout_constraintStart_toEndOf="@id/functionLabel"/>
+
+<!--        <TextView-->
+<!--            android:id="@+id/skinTypeLabel"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:text="Suitable for:"-->
+<!--            android:textSize="16sp"-->
+<!--            android:textColor="@color/black"-->
+<!--            android:textStyle="bold"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/functionLabel"-->
+<!--            app:layout_constraintStart_toStartOf="parent"/>-->
+
+<!--        <TextView-->
+<!--            android:id="@+id/skinType"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:text="skin type"-->
+<!--            android:textSize="14sp"-->
+<!--            app:layout_constraintTop_toTopOf="@id/skinTypeLabel"-->
+<!--            app:layout_constraintBottom_toBottomOf="@id/skinTypeLabel"-->
+<!--            app:layout_constraintStart_toEndOf="@id/skinTypeLabel"/>-->
+
+        <TextView
+            android:id="@+id/ingredientLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Product Ingredients:"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/functionLabel"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/ingredients"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="20dp"
+            android:text="ingredients"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/ingredientLabel"
+            app:layout_constraintStart_toStartOf="@id/ingredientLabel"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

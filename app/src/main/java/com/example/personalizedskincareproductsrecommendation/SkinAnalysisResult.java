@@ -1,18 +1,19 @@
 package com.example.personalizedskincareproductsrecommendation;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
-import android.widget.Adapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -23,6 +24,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -34,119 +36,153 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class SkinAnalysisResult extends AppCompatActivity {
 
-    private TextView skinTypeResult;
-    private TextView skinConditionResult;
+    private TextView skinTypeResult, skinConditionResult;
     private RecyclerView recommendedProductsRecyclerView;
-    private ImageView back, info;
-    private String userId, keyId, skinType;
+    private ImageView back, info, filter;
+    private String userId, keyId, skinType, targetCondition, lowestCondition;
     private FirebaseFirestore firestore;
     private RecommendedProductsAdapter recommendedProductsAdapter;
     private ArrayList<Product> productList;
+    private ArrayList<Product> originalProductList;
+    private HashMap<String, List<String>> skinTypeMapping;
+    private HashMap<String, List<String>> skinConditionMapping;
+    HashMap<String, Object> someMap = new HashMap<>();
+
+
+    private void setupSkinTypeMapping() {
+        skinTypeMapping = new HashMap<>();
+        skinTypeMapping.put("Sensitive", Arrays.asList("Redness Reducing", "Reduces Irritation"));
+        skinTypeMapping.put("Oily", Arrays.asList("Good For Oily Skin"));
+        skinTypeMapping.put("Dry", Arrays.asList("Hydrating"));
+        skinTypeMapping.put("Combination", Arrays.asList("Redness Reducing", "Hydrating"));
+        skinTypeMapping.put("Normal", Arrays.asList("General Care"));
+    }
+
+    private void setupSkinConditionMapping() {
+        skinConditionMapping = new HashMap<>();
+        skinConditionMapping.put("acne", Arrays.asList("Acne Control", "Acne Fighting"));
+        skinConditionMapping.put("redness", Arrays.asList("Redness Reducing", "Soothing","Reduces Irritation"));
+        skinConditionMapping.put("wrinkles", Arrays.asList("Anti-Aging"));
+        skinConditionMapping.put("darkSpots", Arrays.asList("Brightening", "Dark Spot"));
+        skinConditionMapping.put("pores", Arrays.asList("Reduces Large Pores", "Minimizes Pores"));
+        skinConditionMapping.put("darkCircle", Arrays.asList("Brightening"));
+    }
+
+    private boolean isProductRecommended(Product product, String targetCondition) {
+        List<String> afterUses = Arrays.asList(product.getAfterUse().split(","));
+        List<String> functions = Arrays.asList(product.getFunction().split(","));
+
+        // Check if the product matches the skin type
+        boolean matchesSkinType = false;
+        List<String> recommendedFunctions = skinTypeMapping.get(skinType);
+
+        if (recommendedFunctions != null) {
+            for (String afterUse : afterUses) {
+                // Check if the afterUse matches the user's skin type
+                if (recommendedFunctions.stream().anyMatch(afterUse::contains)) {
+                    matchesSkinType = true;
+                    break;
+                }
+            }
+        }
+
+        boolean matchesCondition = false;
+        List<String> recommendedConditionFunctions = skinConditionMapping.get(targetCondition);
+        Log.d(TAG, "Target condition: " + targetCondition);
+        if (recommendedConditionFunctions != null) {
+            for (String afterUse : afterUses) {
+                if (recommendedConditionFunctions.stream().anyMatch(afterUse::contains)) {
+                    matchesCondition = true;
+                    Log.d(TAG, "Matched condition: " + afterUse);
+                    break;
+                }
+            }
+        }
+
+        return matchesSkinType && matchesCondition;
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_skin_analysis_result);
 
-        back = findViewById(R.id.back);
-        back.setOnClickListener(v -> {
-            finish();
-        });
+        initializeViews();
+        setupListeners();
+        setupSkinTypeMapping();
+        setupSkinConditionMapping();
 
-        info = findViewById(R.id.infoIcon);
-        info.setOnClickListener(v -> {
-            // Create a SweetAlertDialog
-            SweetAlertDialog dialog = new SweetAlertDialog(SkinAnalysisResult.this, SweetAlertDialog.NORMAL_TYPE);
-            dialog.setTitleText("Information");
-
-            // Set the content text based on skin type
-            String message;
-            switch (skinType) {
-                case "Dry":
-                    message = "Dry skin may feel tight, rough, and may have flakiness. It's important to hydrate regularly.";
-                    break;
-                case "Oily":
-                    message = "Oily skin can appear shiny and is more prone to acne. Use lightweight, non-comedogenic products.";
-                    break;
-                case "Combination":
-                    message = "Combination skin has both dry and oily areas. Tailor your skincare routine accordingly.";
-                    break;
-                case "Sensitive":
-                    message = "Sensitive skin may react to products. Choose gentle, fragrance-free options.";
-                    break;
-                case "Normal":
-                    message = "Normal skin is balanced and requires regular maintenance. Keep up with a good skincare routine.";
-                    break;
-                default:
-                    message = "Your skin type is based on your skin condition.";
-                    break;
-            }
-
-            // Set the message and show the dialog
-            dialog.setContentText(message);
-            dialog.show();
-        });
-
-        // Retrieve userId and keyId from the Intent
+        // Retrieve userId and keyId from Intent extras
         userId = getIntent().getStringExtra("ARG_USER_ID");
         keyId = getIntent().getStringExtra("ARG_ANALYSIS_ID");
-
-        // Log to check if userId and keyId are correctly retrieved
-        Log.d("SkinAnalysisResult", "Retrieved userId: " + userId + ", keyId: " + keyId);
-
         if (userId == null || keyId == null) {
-            Log.e("Intent Error", "userId or keyId is null. Check intent data passing.");
-            return; // Stop execution if userId or keyId is null
+            Log.e("Intent Error", "userId or keyId is null.");
+            return;
         }
 
-        // Initialize views
-        skinTypeResult = findViewById(R.id.skinTypeResult);
-        skinConditionResult = findViewById(R.id.skinConditionResult);
-        recommendedProductsRecyclerView = findViewById(R.id.recommendedProductsRecyclerView);
-
-        recommendedProductsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
         firestore = FirebaseFirestore.getInstance();
-        productList = new ArrayList<>();
-        recommendedProductsAdapter = new RecommendedProductsAdapter(this, productList);
-        recommendedProductsRecyclerView.setAdapter(recommendedProductsAdapter);
 
-        String userFunction = "Pore Care"; // Example function to filter by
-        List<String> afterUses = new ArrayList<>();
-        afterUses.add("Hydrating");
-        afterUses.add("Good For Oily Skin");
-        afterUses.add("Reduces Large Pores");
-        // Load recommended products
-        loadRecommendedProducts();
+        // save cache
+        FirebaseFirestore.getInstance().setFirestoreSettings(
+                new FirebaseFirestoreSettings.Builder()
+                        .setPersistenceEnabled(true)
+                        .build()
+        );
 
-        // Load skin analysis data
+
+        filter = findViewById(R.id.filter);
+        filter.setOnClickListener(v -> {
+            showFilterOptions();
+        });
+
+        // Load data
         loadSkinAnalysisData();
     }
 
-    private void loadSkinAnalysisData() {
-        // Initialize Firebase Realtime Database reference
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+    private void showFilterOptions() {
+        String[] productTypes = {"Face Cleanser", "Toner", "Serum", "General Moisturizer", "Facial Treatment",
+                "Sunscreen", "Exfoliator", "Essence", "Sheet Mask", "Overnight Mask"};
 
-        // Reference to the specific user's skin analysis
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Product Type")
+                .setItems(productTypes, (dialog, which) -> {
+                    String selectedType = productTypes[which];
+                    filterProductsByType(selectedType);
+                });
+
+        builder.create().show();
+    }
+
+    private void initializeViews() {
+        skinTypeResult = findViewById(R.id.skinTypeResult);
+        skinConditionResult = findViewById(R.id.skinConditionResult);
+        recommendedProductsRecyclerView = findViewById(R.id.recommendedProductsRecyclerView);
+        recommendedProductsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        productList = new ArrayList<>();
+        originalProductList = new ArrayList<>(); // Initialize the original list
+        recommendedProductsAdapter = new RecommendedProductsAdapter(this, productList);
+        recommendedProductsRecyclerView.setAdapter(recommendedProductsAdapter);
+
+        back = findViewById(R.id.back);
+        info = findViewById(R.id.infoIcon);
+        filter = findViewById(R.id.filter);
+    }
+
+    private void setupListeners() {
+        back.setOnClickListener(v -> finish());
+        info.setOnClickListener(v -> showInfoDialog());
+    }
+
+    private void loadSkinAnalysisData() {
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
         database.child("SkinAnalysis").child(userId).child(keyId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    // Get data from snapshot
-                    String imageUrl = snapshot.child("imageUrl").getValue(String.class);
-                    skinType = snapshot.child("skinType").getValue(String.class); // Assign to class variable
-
-                    // Retrieve skin condition data
-                    HashMap<String, Float> skinCondition = new HashMap<>();
-                    for (DataSnapshot conditionSnapshot : snapshot.child("skinCondition").getChildren()) {
-                        skinCondition.put(conditionSnapshot.getKey(), conditionSnapshot.getValue(Float.class));
-                    }
-
-                    // Update UI
-                    displayAnalysisImage(imageUrl);
-                    skinTypeResult.setText(skinType);
-                    skinConditionResult.setText(getSkinConditionResults(skinCondition));
+                    handleAnalysisSnapshot(snapshot);
                 } else {
                     Log.d("Firebase Error", "No data found for userId: " + userId + " and keyId: " + keyId);
                 }
@@ -159,110 +195,163 @@ public class SkinAnalysisResult extends AppCompatActivity {
         });
     }
 
-    private String getSkinConditionResults(HashMap<String, Float> skinConditions) {
+    private void handleAnalysisSnapshot(DataSnapshot snapshot) {
+        String imageUrl = snapshot.child("imageUrl").getValue(String.class);
+        skinType = snapshot.child("skinType").getValue(String.class);
+        HashMap<String, Float> skinCondition = new HashMap<>();
+        float lowestValue = Float.MAX_VALUE;
+        String lowestCondition = null;  // Initialize as null to store the condition with the lowest value
+
+        for (DataSnapshot conditionSnapshot : snapshot.child("skinCondition").getChildren()) {
+            String condition = conditionSnapshot.getKey();
+            float originalValue = conditionSnapshot.getValue(Float.class);
+            float adjustedValue = 100 - originalValue; // Calculate the adjusted value
+
+            skinCondition.put(condition, adjustedValue);
+
+            // Compare the adjusted value to find the lowest condition
+            if (adjustedValue < lowestValue) {
+                lowestValue = adjustedValue;
+                lowestCondition = condition;  // Update lowest condition to the current condition
+            }
+            Log.d("SkinAnalysisResult", "Condition: " + condition + ", Original Value: " + originalValue + ", Adjusted Value: " + adjustedValue);
+            Log.d("SkinAnalysisResult", "Lowest Condition: " + lowestCondition + ", Lowest Value: " + lowestValue);
+        }
+
+        displayAnalysisImage(imageUrl);
+        skinTypeResult.setText(skinType);
+        skinConditionResult.setText(formatSkinConditionResults(skinCondition));
+
+        // Load recommended products based on the lowest condition
+        if (lowestCondition != null) {
+            loadRecommendedProducts(lowestCondition);
+        } else {
+            Log.w("Lowest Condition", "No valid condition found for recommendation.");
+        }
+    }
+
+
+    private String formatSkinConditionResults(HashMap<String, Float> skinConditions) {
         StringBuilder results = new StringBuilder();
         for (String condition : skinConditions.keySet()) {
-            int value = 100 - (skinConditions.get(condition).intValue());
+            int value = skinConditions.get(condition).intValue();
+            String resultLine = condition + ": " + value + "%\n";
 
-            // Create a SpannableString to hold the formatted text
-            SpannableString spannableString = new SpannableString(condition + ": " + value + "%\n");
-
-            // Set the color based on the value
-            if (value >= 80) {
-                spannableString.setSpan(new ForegroundColorSpan(Color.GREEN), 0, spannableString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            } else if (value <= 50) {
-                spannableString.setSpan(new ForegroundColorSpan(Color.RED), 0, spannableString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-
-            // Append the colored SpannableString to results
-            results.append(spannableString.toString()); // Convert SpannableString to String
+            // Apply color based on severity
+            int color = value >= 80 ? Color.GREEN : value <= 50 ? Color.RED : Color.BLACK;
+            results.append(getColoredText(resultLine, color));
         }
         return results.toString();
     }
 
+    private SpannableString getColoredText(String text, int color) {
+        SpannableString spannable = new SpannableString(text);
+        spannable.setSpan(new ForegroundColorSpan(color), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return spannable;
+    }
+
     private void displayAnalysisImage(String imageUrl) {
         ImageView analysisImageView = findViewById(R.id.analysisImage);
-
         if (imageUrl != null) {
-            Glide.with(this)
-                    .load(imageUrl)
-                    .into(analysisImageView);
-
-            // Rotate the ImageView itself if the image appears rotated
-            analysisImageView.setRotation(270); // Adjust this angle if necessary
+            Glide.with(this).load(imageUrl).into(analysisImageView);
+            analysisImageView.setRotation(270);  // Adjust rotation if necessary
         } else {
             Log.d("Image Load Error", "Image URL is null");
         }
     }
 
-    private void loadRecommendedProducts() {
-        firestore.collection("skincare_products") // Replace with your actual Firestore collection path
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Product product = document.toObject(Product.class);
+    private void loadRecommendedProducts(String targetCondition) {
+        firestore.collection("skincare_products").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                productList.clear();
+                originalProductList.clear(); // Clear original list before adding new items
 
-                            // Check if the product matches the user's skin type and skin condition
-                            if (isProductRecommended(product)) {
-                                productList.add(product);
-                            }
+                HashMap<String, List<Product>> productsByType = new HashMap<>();
+
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    Product product = document.toObject(Product.class);
+                    if (isProductRecommended(product, targetCondition)) {
+                        String productType = product.getType();
+
+                        if (!productsByType.containsKey(productType)) {
+                            productsByType.put(productType, new ArrayList<>());
                         }
-                        recommendedProductsAdapter.notifyDataSetChanged(); // Notify the adapter of data change
-                    } else {
-                        Log.e("Firestore Error", "Error getting products: ", task.getException());
+
+                        List<Product> productListForType = productsByType.get(productType);
+                        if (productListForType.size() < 5) {
+                            productListForType.add(product);
+                        }
                     }
-                });
-    }
+                }
 
-    // Method to check if the product is recommended based on skin type and skin condition
-    private boolean isProductRecommended(Product product) {
-        // Split the afterUses string to check if it includes conditions matching skin analysis
-        String[] afterUsesArray = product.getAfterUse().split(",");
-        List<String> afterUses = Arrays.asList(afterUsesArray);
+                for (List<Product> products : productsByType.values()) {
+                    productList.addAll(products);
+                    originalProductList.addAll(products); // Add to the original list as well
+                }
 
-        String[] functionsArray = product.getFunction().split(",");
-        List<String> functions = Arrays.asList(functionsArray);
-
-        // Check for skin type and condition
-        boolean matchesAfterUse = afterUses.stream().anyMatch(afterUse -> {
-            switch (skinType) {
-                case "Sensitive":
-                    return afterUse.contains("Redness Reducing") || afterUse.contains("Reduces Irritation");
-                case "Oily":
-                    return afterUse.contains("Good For Oily Skin") || afterUse.contains("Acne Trigger");
-                case "Dry":
-                    return afterUse.contains("Hydrating") || afterUse.contains("Anti-Aging");
-                case "Combination":
-                    return afterUse.contains("Redness Reducing") || afterUse.contains("Hydrating");
-                case "Normal":
-                    return true; // Normal skin can use most products
-                default:
-                    return false; // Default case if skin type is unknown
+                recommendedProductsAdapter.notifyDataSetChanged();
+                Log.d("Product Load", "Total products loaded: " + productList.size());
+            } else {
+                Log.e("Firestore Error", "Error getting products: ", task.getException());
             }
         });
-        Log.d("Skin Analysis", "Matches After Use: " + matchesAfterUse);
-
-        // Check if the product's function matches the expected function for the skin type
-        boolean matchesFunction = functions.stream().anyMatch(function -> {
-            switch (skinType) {
-                case "Sensitive":
-                    return function.contains("Sensitive Skin Care");
-                case "Oily":
-                    return function.contains("Oily Skin Care");
-                case "Dry":
-                    return function.contains("Dry Skin Care");
-                case "Combination":
-                    return function.contains("Combination Skin Care");
-                case "Normal":
-                    return true; // Normal skin can use most products
-                default:
-                    return false; // Default case if skin type is unknown
-            }
-        });
-
-        // Return true if both conditions match
-        return matchesAfterUse && matchesFunction;
     }
+
+    private void filterProductsByType(String selectedType) {
+        ArrayList<Product> filteredRecommendedList = new ArrayList<>();
+
+        for (Product product : originalProductList) { // Use original list here
+            if (product.getType() != null && product.getType().equalsIgnoreCase(selectedType)) {
+                filteredRecommendedList.add(product);
+            }
+        }
+        Log.d("Filtered Products", "Total filtered products: " + filteredRecommendedList.size());
+
+        recommendedProductsAdapter.updateProductList(filteredRecommendedList);
+
+        if (filteredRecommendedList.isEmpty()) {
+            showNoProductsFoundDialog(selectedType);
+        }
+    }
+
+    private void showInfoDialog() {
+        SweetAlertDialog dialog = new SweetAlertDialog(SkinAnalysisResult.this, SweetAlertDialog.NORMAL_TYPE);
+        dialog.setTitleText("Information");
+        String message;
+
+        switch (skinType) {
+            case "Dry":
+                message = "Dry skin may feel tight, rough, and may have flakiness. It's important to hydrate regularly.";
+                break;
+            case "Oily":
+                message = "Oily skin can appear shiny and is more prone to acne. Use lightweight, non-comedogenic products.";
+                break;
+            case "Combination":
+                message = "Combination skin has both dry and oily areas. Tailor your skincare routine accordingly.";
+                break;
+            case "Sensitive":
+                message = "Sensitive skin may react to products. Choose gentle, fragrance-free options.";
+                break;
+            case "Normal":
+                message = "Normal skin is balanced and requires regular maintenance. Keep up with a good skincare routine.";
+                break;
+            default:
+                message = "Your skin type is based on your skin condition.";
+                break;
+        }
+
+        dialog.setContentText(message);
+        dialog.show();
+    }
+
+    // Helper method to show a dialog if no products are found
+    private void showNoProductsFoundDialog(String selectedType) {
+        SweetAlertDialog dialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
+        dialog.setTitleText("No Products Found");
+        dialog.setContentText("No products found for the selected type: " + selectedType);
+        dialog.show();
+    }
+
+
 
 }
