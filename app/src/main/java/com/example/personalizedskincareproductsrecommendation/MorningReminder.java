@@ -59,8 +59,22 @@ public class MorningReminder extends AppCompatActivity {
         setButton = findViewById(R.id.set_button);
         // Initially set the "Set" button to disabled
         setButton.setEnabled(false);
-//        setButton.setOnClickListener(v -> saveReminderToFirebase());
-        setButton.setOnClickListener(v -> showConfirmDialog());
+        setButton.setOnClickListener(v -> {
+            if (!isAnyDaySelected()) {
+                // Display error message for no days selected
+                new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Selection Required")
+                        .setContentText("Please select at least one day.")
+                        .setConfirmText("OK")
+                        .show();
+                return;
+            }
+
+            String time = getValidTime();
+
+            // Show confirmation dialog if time is valid
+            showConfirmDialog(time);
+        });
 
         cancel = findViewById(R.id.cancel_button);
         cancel.setOnClickListener(v -> finish());
@@ -79,8 +93,31 @@ public class MorningReminder extends AppCompatActivity {
         });
     }
 
+    private boolean isAnyDaySelected() {
+        return sun.isChecked() || mon.isChecked() || tue.isChecked() ||
+                wed.isChecked() || thurs.isChecked() || fri.isChecked() ||
+                sat.isChecked();
+    }
 
-    private void showConfirmDialog() {
+    private String getValidTime() {
+        int hour = timepicker.getHour();
+        int minute = timepicker.getMinute();
+
+        // Validate selected time
+        if (hour < 6 || hour >= 12) {
+            new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                    .setTitleText("Invalid Time")
+                    .setContentText("Please select a time between 6 AM and 11:59 AM.")
+                    .setConfirmText("OK")
+                    .show();
+            return null; // Return null if time is invalid
+        }
+
+        // Format time as a string
+        return String.format("%02d:%02d", hour, minute);
+    }
+
+    private void showConfirmDialog(String time) {
         SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
         sweetAlertDialog.setTitle("Are you sure?");
         sweetAlertDialog.setContentText("Do you want to set the reminder?");
@@ -89,8 +126,9 @@ public class MorningReminder extends AppCompatActivity {
             @Override
             public void onClick(SweetAlertDialog sDialog) {
                 sDialog.dismissWithAnimation();
-                saveReminderToFirebase();
-                finish();
+                if (time !=null){
+                    saveReminderToFirebase(time);
+                }
             }
         });
         sweetAlertDialog.setCancelText("No");
@@ -103,19 +141,7 @@ public class MorningReminder extends AppCompatActivity {
         sweetAlertDialog.show();
     }
 
-    private void saveReminderToFirebase() {
-        // Retrieve the selected time
-        int hour = timepicker.getHour();
-        int minute = timepicker.getMinute();
-
-        // Validate selected time
-        if (hour < 6 || hour >= 12) {
-            Toast.makeText(this, "Please select a time between 6 AM and 11:59 AM", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String time = String.format("%02d:%02d", hour, minute);
-
+    private void saveReminderToFirebase(String time) {
         // Retrieve the selected days
         List<String> selectedDays = new ArrayList<>();
         if (sun.isChecked()) selectedDays.add("Sunday");
@@ -148,14 +174,22 @@ public class MorningReminder extends AppCompatActivity {
         // Save to Firebase
         databaseReference.child(userId).child("morning_reminder").setValue(reminderData).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                Toast.makeText(MorningReminder.this, "Reminder set successfully", Toast.LENGTH_SHORT).show();
-                finish(); // Optionally finish the activity after success
+                SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(MorningReminder.this, SweetAlertDialog.SUCCESS_TYPE);
+                sweetAlertDialog.setTitle("Reminder Set");
+                sweetAlertDialog.setContentText("Reminder set successfully");
+                sweetAlertDialog.setConfirmText("OK");
+                sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog sDialog) {
+                        sDialog.dismissWithAnimation();
+                        finish();
+                    }
+                });
+                sweetAlertDialog.show();
             } else {
-                Log.e("MorningReminder", "Failed to set reminder", task.getException());
                 Toast.makeText(MorningReminder.this, "Failed to set reminder", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
 }
 

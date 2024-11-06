@@ -25,6 +25,9 @@
         android:theme="@style/Theme.PersonalizedSkincareProductsRecommendation"
         tools:targetApi="31">
         <activity
+            android:name=".AdminEditProducts"
+            android:exported="false" />
+        <activity
             android:name=".ProductDetails"
             android:exported="false" />
         <activity

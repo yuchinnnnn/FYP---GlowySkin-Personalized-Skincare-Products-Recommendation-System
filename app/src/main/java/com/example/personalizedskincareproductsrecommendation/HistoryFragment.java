@@ -69,7 +69,6 @@ public class HistoryFragment extends Fragment {
         skinLogHistoryFragment.setArguments(args);
         skinAnalysisHistoryFragment.setArguments(args);
 
-        // Add Fragments for Active and Deactivated Users
         adapter.addFragment(skinLogHistoryFragment, "Skin Log");
         adapter.addFragment(skinAnalysisHistoryFragment, "Skin Analysis");
 

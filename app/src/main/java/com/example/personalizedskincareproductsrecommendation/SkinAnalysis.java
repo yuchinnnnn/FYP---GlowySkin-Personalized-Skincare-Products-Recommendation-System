@@ -7,9 +7,16 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,6 +35,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -43,6 +52,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import org.tensorflow.lite.Interpreter;
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -55,6 +65,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,8 +109,6 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
             finish();
             return;
         }
-
-
 
         // Initialize Firebase instances
         mAuth = FirebaseAuth.getInstance();
@@ -154,91 +163,6 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         skinTypeModel = loadSkinTypeModel();
     }
 
-    // Method to show a dialog with tips for skin analysis
-    private void showSkinAnalysisTipsDialog() {
-        SweetAlertDialog dialog = new SweetAlertDialog(SkinAnalysis.this, SweetAlertDialog.NORMAL_TYPE);
-        dialog.setTitleText("Skin Analysis Tips");
-
-        // Customize the message text for line breaks
-        String message = "1. Make sure your face is well lit.<br>" +
-                "2. Avoid shadows on your face.<br>" +
-                "3. Keep the camera steady.<br>" +
-                "4. Remove any makeup for the best results.";
-
-        dialog.setContentText(message);
-        dialog.setConfirmText("Got it!");
-
-        // Show the dialog first to access its internal layout
-        dialog.show();
-    }
-
-    private void captureImage() {
-        camera.takePicture(null, null, new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                // Generate a new keyId each time an image is captured
-                keyId = databaseReference.push().getKey(); // Generate unique keyId
-
-                // Save the image to device storage
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-
-                // Analyze skin to get skin type and skin condition percentages
-                analyzeSkin(bitmap); // This sets skinType and skinConditionPercentages
-
-                // Now call uploadImageToFirebaseStorage with the skinType and skinConditionPercentages
-                uploadImageToFirebaseStorage(bitmap, userId, skinType, skinConditionPercentages);
-            }
-        });
-    }
-
-
-    private void uploadImage() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(intent, 1);
-    }
-
-    private Bitmap preprocessImage(Bitmap bitmap) {
-        // Resize the image to the input size of the model
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, false); // assuming model expects 224x224 input
-        // Optionally convert to grayscale if your model requires it
-        // Normalize pixel values if needed
-        return resizedBitmap;
-    }
-
-    // Load the TFLite model for skin condition
-    private Interpreter loadSkinConditionModel() {
-
-        try {
-            AssetFileDescriptor fileDescriptor = this.getAssets().openFd("skin_condition_MobileNetV2.tflite");
-            FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-            FileChannel fileChannel = inputStream.getChannel();
-            long startOffset = fileDescriptor.getStartOffset();
-            long declaredLength = fileDescriptor.getDeclaredLength();
-            MappedByteBuffer modelFile = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
-            return new Interpreter(modelFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    // Load the TFLite model for skin type
-    private Interpreter loadSkinTypeModel() {
-        try {
-            AssetFileDescriptor fileDescriptor = this.getAssets().openFd("skin_type_MobileNetV2.tflite");
-            FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-            FileChannel fileChannel = inputStream.getChannel();
-            long startOffset = fileDescriptor.getStartOffset();
-            long declaredLength = fileDescriptor.getDeclaredLength();
-            MappedByteBuffer modelFile = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
-            return new Interpreter(modelFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private void analyzeSkin(Bitmap bitmap) {
         // Preprocess the image
         Bitmap preprocessedImage = preprocessImage(bitmap);
@@ -260,27 +184,14 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         // Determine combination or sensitive skin based on conditions
         skinType = interpretSkinTypeResult(skinTypeResult, skinConditionPercentages); // Set the instance variable
 
-        // Display the results
-        displayResultsWithPercentages(skinConditionPercentages, skinType);
+
+        displayResultsWithPercentages(skinConditionPercentages, skinType, userId, keyId);
     }
 
-    private float[] softmax(float[] input) {
-        float sum = 0f;
-        for (float val : input) {
-            sum += Math.exp(val);
-        }
-        float[] output = new float[input.length];
-        for (int i = 0; i < input.length; i++) {
-            output[i] = (float) (Math.exp(input[i]) / sum) * 100; // Convert to percentage
-        }
-        return output;
-    }
-
-    private void displayResultsWithPercentages(float[] skinConditionPercentages, String skinType) {
+    private void displayResultsWithPercentages(float[] skinConditionPercentages, String skinType, String userId, String keyId) {
+        // Build the result text
         String[] skinConditionLabels = {"Acne", "Dark Circle", "Dark Spots", "Pores", "Redness", "Wrinkles"};
         StringBuilder resultText = new StringBuilder();
-
-        resultText.append("Skin Condition Analysis:\n\n");
 
         for (int i = 0; i < skinConditionPercentages.length; i++) {
             resultText.append("• ")
@@ -291,86 +202,28 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         }
 
         resultText.append("\n").append("Skin Type: ").append(skinType);
+        resultText.append("\n\n").append("Loading to skin analysis result page...");
 
+        // Call the method to display the dialog with prepared text
+        showSkinAnalysisDialog(resultText.toString(), userId, keyId);
+    }
+
+
+    private void showSkinAnalysisDialog(String resultText, String userId, String keyId) {
         // Inflate custom layout
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_skin_analysis, null);
 
-        // Set the content text
+        // Set the content text with the spannable string
         TextView dialogContent = dialogView.findViewById(R.id.dialogContent);
-        dialogContent.setText(resultText.toString());
+        dialogContent.setText(resultText);
 
         // Create the SweetAlertDialog and set the custom view
         SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(SkinAnalysis.this, SweetAlertDialog.SUCCESS_TYPE)
                 .setCustomView(dialogView)
-                .setConfirmButton("View", SweetAlertDialog::dismissWithAnimation)
-                .setConfirmClickListener(sweetAlertDialog1 -> {
-                    sweetAlertDialog1.dismiss(); // Dismiss the dialog first
-
-                    // Create a new intent for the activity you want to start
-                    Intent intent = new Intent(SkinAnalysis.this, SkinAnalysisResult.class);
-                    intent.putExtra("userId", userId);
-                    intent.putExtra("keyId", keyId);
-                    startActivity(intent); // Start the new activity
-                });
+                .hideConfirmButton();
 
         sweetAlertDialog.show();
-    }
-
-    private String interpretSkinTypeResult(float[][] skinTypeResult, float[] skinConditionPercentages) {
-        String[] skinTypeLabels = {"Oily", "Dry", "Normal"};
-        int maxIndex = 0;
-        for (int i = 1; i < skinTypeResult[0].length; i++) {
-            if (skinTypeResult[0][i] > skinTypeResult[0][maxIndex]) {
-                maxIndex = i;
-            }
-        }
-        String baseSkinType = skinTypeLabels[maxIndex];
-
-        // Check for combination skin (both oily and dry skin present)
-        if (skinTypeResult[0][0] > 0.5 && skinTypeResult[0][1] > 0.5) {
-            return "Combination Skin";
-        }
-
-        // Check for sensitive skin (if redness percentage is high)
-        if (skinConditionPercentages[4] > 50) {  // Index 4 represents redness
-            return "Sensitive Skin";
-        }
-
-        return baseSkinType;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 1 && resultCode == RESULT_OK) {
-            try {
-                // Retrieve image from the gallery
-                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(data.getData()));
-
-                // Save the image to the device storage
-                uploadImageToFirebaseStorage(bitmap, userId, skinType, skinConditionPercentages); // Pass skinType and skinConditionPercentages to the method"Uploaded_Image");
-
-                analyzeSkin(bitmap);  // Pass the image for analysis
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void showSuccessMessage(String path) {
-        new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
-                .setTitleText("Image Saved")
-                .setContentText("Image successfully saved at: " + path)
-                .show();
-    }
-
-    private void showErrorMessage(String message) {
-        new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
-                .setTitleText("Error")
-                .setContentText(message)
-                .show();
     }
 
     private void uploadImageToFirebaseStorage(Bitmap bitmap, String userId, String skinType, float[] skinConditionPercentages) {
@@ -412,23 +265,27 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     private void saveImageUrlToDatabase(String imageUrl, String userId, String skinType, float[] skinConditionPercentages) {
-        // Log input parameters
         Log.d("RealtimeDatabase", "Saving data: " + imageUrl + ", userId: " + userId + ", skinType: " + skinType);
 
         // Initialize Firebase Realtime Database
         DatabaseReference database = FirebaseDatabase.getInstance().getReference();
 
         // Generate a new unique keyId for the analysis
-        String keyId = database.child("SkinAnalysis").child(userId).child("images").push().getKey();
+        String keyId = database.child("SkinAnalysis").child(userId).push().getKey();
+
+        // Check if keyId was generated successfully
+        if (keyId == null) {
+            showErrorMessage("Error generating key for skin analysis");
+            return;
+        }
 
         // Create a HashMap to store image data
         Map<String, Object> skinAnalysisData = new HashMap<>();
         skinAnalysisData.put("userId", userId);
         skinAnalysisData.put("imageUrl", imageUrl);
-        skinAnalysisData.put("uploadedDateTime", getCurrentDateTime()); // Use server timestamp for consistency
+        skinAnalysisData.put("uploadedDateTime", getCurrentDateTime());
         skinAnalysisData.put("skinType", skinType);
 
-        // Create a nested map for results using actual skin condition percentages
         Map<String, Object> results = new HashMap<>();
         results.put("acne", skinConditionPercentages[0]);
         results.put("redness", skinConditionPercentages[1]);
@@ -437,23 +294,26 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         results.put("darkCircle", skinConditionPercentages[4]);
         results.put("pores", skinConditionPercentages[5]);
 
-        // Add results to the skin analysis data
         skinAnalysisData.put("skinCondition", results);
-
-        // Log the data being saved
-        Log.d("RealtimeDatabase", "Data to save: " + skinAnalysisData);
-        Log.d("RealtimeDatabase", "Saving to: SkinAnalysis/" + userId + "/images/" + keyId);
 
         // Save image URL and results under the specific user and keyId
         database.child("SkinAnalysis").child(userId).child(keyId)
                 .setValue(skinAnalysisData)
-                .addOnSuccessListener(aVoid -> Log.d("RealtimeDatabase", "Data successfully written!"))
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("RealtimeDatabase", "Data successfully written!");
+
+                    // Navigate to SkinAnalysisResult once data is saved
+                    Intent intent = new Intent(this, SkinAnalysisResult.class);
+                    intent.putExtra("ARG_USER_ID", userId);
+                    intent.putExtra("ARG_ANALYSIS_ID", keyId);  // Pass the generated keyId here
+                    startActivity(intent);
+                    finish();
+                })
                 .addOnFailureListener(e -> {
-                    Log.w("RealtimeDatabase", "Error writing data", e); // Log the error
+                    Log.w("RealtimeDatabase", "Error writing data", e);
                     showErrorMessage("Error saving to database: " + e.getMessage());
                 });
     }
-
 
     @Override
     protected void onPause() {
@@ -480,7 +340,6 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
-
     private ByteBuffer convertBitmapToByteBuffer(Bitmap bitmap) {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * 224 * 224 * 3); // Assuming RGB image 224x224
         byteBuffer.order(ByteOrder.nativeOrder());
@@ -494,6 +353,99 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         }
         return byteBuffer;
     }
+
+    private float[] softmax(float[] input) {
+        float sum = 0f;
+        for (float val : input) {
+            sum += Math.exp(val);
+        }
+        float[] output = new float[input.length];
+        for (int i = 0; i < input.length; i++) {
+            output[i] = (float) (Math.exp(input[i]) / sum) * 100; // Convert to percentage
+        }
+        return output;
+    }
+
+    private void captureImage() {
+        camera.takePicture(null, null, new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                // Generate a new keyId each time an image is captured
+                keyId = databaseReference.push().getKey(); // Generate unique keyId
+
+                // Save the image to device storage
+                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+                // Analyze skin to get skin type and skin condition percentages
+                analyzeSkin(bitmap); // This sets skinType and skinConditionPercentages
+
+                // Now call uploadImageToFirebaseStorage with the skinType and skinConditionPercentages
+                uploadImageToFirebaseStorage(bitmap, userId, skinType, skinConditionPercentages);
+            }
+        });
+    }
+
+    private Bitmap preprocessImage(Bitmap bitmap) {
+        // Resize the image to the input size of the model
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, false); // assuming model expects 224x224 input
+        // Optionally convert to grayscale if your model requires it
+        // Normalize pixel values if needed
+        return resizedBitmap;
+    }
+
+    // Handle camera permission request result
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                // Handle permission denial
+            }
+        }
+    }
+
+    // Method to show a dialog with tips for skin analysis
+    private void showSkinAnalysisTipsDialog() {
+        SweetAlertDialog dialog = new SweetAlertDialog(SkinAnalysis.this, SweetAlertDialog.NORMAL_TYPE);
+        dialog.setTitleText("Skin Analysis Tips");
+
+        // Customize the message text for line breaks
+        String message = "1. Make sure your face is well lit.<br>" +
+                "2. Avoid shadows on your face.<br>" +
+                "3. Keep the camera steady.<br>" +
+                "4. Remove any makeup for the best results.";
+
+        dialog.setContentText(message);
+        dialog.setConfirmText("Got it!");
+
+        dialog.show();
+    }
+
+    private String interpretSkinTypeResult(float[][] skinTypeResult, float[] skinConditionPercentages) {
+        String[] skinTypeLabels = {"Oily", "Dry", "Normal"};
+        int maxIndex = 0;
+        for (int i = 1; i < skinTypeResult[0].length; i++) {
+            if (skinTypeResult[0][i] > skinTypeResult[0][maxIndex]) {
+                maxIndex = i;
+            }
+        }
+        String baseSkinType = skinTypeLabels[maxIndex];
+
+        // Check for combination skin (both oily and dry skin present)
+        if (skinTypeResult[0][0] > 0.5 && skinTypeResult[0][1] > 0.5) {
+            return "Combination Skin";
+        }
+
+        // Check for sensitive skin (if redness percentage is high)
+        if (skinConditionPercentages[4] > 50) {  // Index 4 represents redness
+            return "Sensitive Skin";
+        }
+
+        return baseSkinType;
+    }
+
 
     // Open Camera
     // Open the front camera
@@ -596,16 +548,68 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
-    // Handle camera permission request result
+    private void uploadImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, 1);
+    }
+
+    // Load the TFLite model for skin condition
+    private Interpreter loadSkinConditionModel() {
+
+        try {
+            AssetFileDescriptor fileDescriptor = this.getAssets().openFd("skin_condition_MobileNetV2.tflite");
+            FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+            FileChannel fileChannel = inputStream.getChannel();
+            long startOffset = fileDescriptor.getStartOffset();
+            long declaredLength = fileDescriptor.getDeclaredLength();
+            MappedByteBuffer modelFile = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+            return new Interpreter(modelFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // Load the TFLite model for skin type
+    private Interpreter loadSkinTypeModel() {
+        try {
+            AssetFileDescriptor fileDescriptor = this.getAssets().openFd("skin_type_MobileNetV2.tflite");
+            FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+            FileChannel fileChannel = inputStream.getChannel();
+            long startOffset = fileDescriptor.getStartOffset();
+            long declaredLength = fileDescriptor.getDeclaredLength();
+            MappedByteBuffer modelFile = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+            return new Interpreter(modelFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                openCamera();
-            } else {
-                // Handle permission denial
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            try {
+                // Retrieve image from the gallery
+                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(data.getData()));
+
+                // Save the image to the device storage
+                uploadImageToFirebaseStorage(bitmap, userId, skinType, skinConditionPercentages); // Pass skinType and skinConditionPercentages to the method"Uploaded_Image");
+
+                analyzeSkin(bitmap);  // Pass the image for analysis
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    private void showErrorMessage(String message) {
+        new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                .setTitleText("Error")
+                .setContentText(message)
+                .show();
     }
 }

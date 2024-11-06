@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class AdminEditContent extends AppCompatActivity implements ImagesAdapter.OnImageDeleteListener {
     private FirebaseAuth mAuth;
     private String userId;
@@ -108,6 +110,7 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
         uploadCoverButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isCoverImage = true;
                 openImagePickerForCover();
             }
         });
@@ -149,8 +152,8 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
         replaceImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isCoverImage = true;  // Set to true for cover image
-                openImagePickerForCover();  // Open image picker for cover image
+                isCoverImage = false;  // Set to true for cover image
+                openImagePicker();  // Open image picker for cover image
             }
         });
 
@@ -158,7 +161,19 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deleteContent();
+                SweetAlertDialog deleteDialog = new SweetAlertDialog(AdminEditContent.this, SweetAlertDialog.WARNING_TYPE);
+                deleteDialog.setTitleText("Are you sure?");
+                deleteDialog.setContentText("Do you want to delete this content?");
+                deleteDialog.setConfirmText("Yes");
+                deleteDialog.setCancelText("No");
+                deleteDialog.setConfirmClickListener(sDialog -> {
+                    sDialog.dismissWithAnimation();
+                    deleteContent();
+                });
+                deleteDialog.setCancelClickListener(sDialog -> {
+                    sDialog.dismissWithAnimation();
+                });
+                deleteDialog.show();
             }
         });
     }
@@ -173,32 +188,39 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
     private void openImagePicker() {
         Intent intent = new Intent();
         intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); // Enable multiple selection
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture(s)"), PICK_IMAGE_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null) {
-            imageUri = data.getData();  // Get the image URI
-
-            // Check if we are uploading the cover image or other images
-            if (isCoverImage) {
-                uploadCoverImageToFirebase(imageUri);  // Upload the cover image to Firebase Storage
-            } else {
-                uploadImageToFirebase(imageUri);  // Upload other images
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            if (data.getClipData() != null) { // Check for multiple images
+                int count = data.getClipData().getItemCount();
+                for (int i = 0; i < count; i++) {
+                    Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                    uploadImageToFirebase(imageUri);
+                }
+            } else if (data.getData() != null) { // Single image
+                imageUri = data.getData();
+                if (isCoverImage) {
+                    uploadCoverImageToFirebase(imageUri);
+                } else {
+                    uploadImageToFirebase(imageUri);
+                }
             }
         }
     }
 
+
     private void uploadImageToFirebase(Uri imageUri) {
         if (imageUri != null) {
-            // Define storage path (e.g., "images/filename.jpg")
+            // Define storage path
             StorageReference fileReference = FirebaseStorage.getInstance()
-                    .getReference("Skincare_tips_image")
+                    .getReference("Skincare_tips_image/" + userId + "/tipsImage")
                     .child(System.currentTimeMillis() + ".jpg");
 
             // Upload the image
@@ -212,6 +234,11 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
                                 public void onSuccess(Uri uri) {
                                     String downloadUrl = uri.toString();
                                     saveImageUrlToDatabase(downloadUrl);  // Save URL to Firebase Database
+
+                                    // Add the download URL to the imageUrls list and notify the adapter
+                                    imageUrls.add(downloadUrl);
+                                    imagesAdapter.notifyItemInserted(imageUrls.size() - 1);  // Notify adapter of new item
+                                    imagesRecyclerView.scrollToPosition(imageUrls.size() - 1);  // Scroll to the newly added image
                                 }
                             });
                         }
@@ -227,12 +254,13 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
         }
     }
 
+
     private void uploadCoverImageToFirebase(Uri imageUri) {
         if (imageUri != null) {
-            // Define storage path for cover image (e.g., "Skincare_tips_image/userId/contentId_cover.jpg")
+            // Define the structured path for the cover image
             StorageReference fileReference = FirebaseStorage.getInstance()
-                    .getReference("Skincare_tips_image")
-                    .child(userId + "/" + contentId + "_cover.jpg");
+                    .getReference("Skincare_tips_image/" + userId + "/coverImage/" + System.currentTimeMillis() + ".jpg");
+
 
             // Upload the cover image
             fileReference.putFile(imageUri)
@@ -259,6 +287,7 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
             Toast.makeText(this, "No image selected", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void saveCoverImageUrlToDatabase(String downloadUrl) {
         if (contentId != null) {
@@ -327,30 +356,14 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
                     }
                     uploadDate = targetFormat.format(date);
 
-                    // Assuming title contains spaces or special characters
-                    String coverImageFilename = (title + "_cover.jpg").replace(" ", "_"); // Replace spaces with underscores
+                    String coverImages = dataSnapshot.child("coverImage").getValue(String.class);
 
-                    String storageUrl = "https://firebasestorage.googleapis.com/v0/b/personalized-skincare-products.appspot.com/o/Skincare_tips_image%2F"
-                            + Uri.encode(userId) + "%2F" + Uri.encode(coverImageFilename) + "?alt=media";
-
-
-                    Log.d("storageUrl", storageUrl);
-
-                    Glide.with(AdminEditContent.this)
-                            .load(storageUrl)
-                            .listener(new RequestListener<Drawable>() {
-                                @Override
-                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                                    Log.e("Glide Error", "Failed to load image: " + e.getMessage());
-                                    return false; // Important to return false so the error placeholder can be set
-                                }
-
-                                @Override
-                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                    return false;
-                                }
-                            })
-                            .into(coverImage);
+                    // Load cover image
+                    if (coverImages != null) {
+                        Glide.with(AdminEditContent.this)
+                                .load(coverImages)
+                                .into(coverImage);
+                    }
 
 
                     // Set text fields
@@ -358,20 +371,15 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
                     editDescription.setText(description);
                     uploadDateView.setText(uploadDate);
 
-                    // Load multiple images
                     DataSnapshot imagesSnapshot = dataSnapshot.child("images");
-                    imageUrls.clear(); // Clear any previous data
-
-                    // Loop through images
+                    imageUrls.clear(); // Clear any existing images in the list
                     for (DataSnapshot imageSnapshot : imagesSnapshot.getChildren()) {
                         String imageUrl = imageSnapshot.getValue(String.class);
-                        imageUrls.add(imageUrl);  // Add each image URL to the list
+                        if (imageUrl != null) {
+                            imageUrls.add(imageUrl); // Add each image URL to the list
+                        }
                     }
-
-                    // Notify adapter that data has changed
-                    imagesAdapter.notifyDataSetChanged();
-
-
+                    imagesAdapter.notifyDataSetChanged(); // Notify adapter of data change
                 } else {
                     Toast.makeText(AdminEditContent.this, "Content not found", Toast.LENGTH_SHORT).show();
                 }
@@ -379,10 +387,11 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.e("Firebase", "Error fetching data", databaseError.toException());
+                Toast.makeText(AdminEditContent.this, "Failed to load content: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
+
     @Override
     public void onImageDelete(String imageUrl) {
         // Call the function to delete the image
@@ -450,17 +459,27 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
         updatedContent.put("description", newDescription);
         updatedContent.put("lastEditedDate", currentDateAndTime); // Store the edited date
 
+        // Loop through image URLs and add them to the map
+        if (imageUrls != null) {
+            updatedContent.put("images", imageUrls);
+        }
+
         // Assuming you're not changing the image in this section, image update logic can be separate
 
         // Update the content in Firebase
         databaseReference.updateChildren(updatedContent)
                 .addOnSuccessListener(aVoid -> {
-                    // Success
-                    Toast.makeText(AdminEditContent.this, "Content updated successfully", Toast.LENGTH_SHORT).show();
-                    finish(); // Close the activity or redirect as needed
+                    SweetAlertDialog dialog = new SweetAlertDialog(AdminEditContent.this, SweetAlertDialog.SUCCESS_TYPE);
+                    dialog.setTitleText("Content Updated");
+                    dialog.setContentText("Content has been updated successfully");
+                    dialog.setConfirmText("Ok");
+                    dialog.setConfirmClickListener(sDialog -> {
+                        sDialog.dismissWithAnimation();
+                        finish();
+                    });
+                    dialog.show();
                 })
                 .addOnFailureListener(e -> {
-                    // Failure
                     Toast.makeText(AdminEditContent.this, "Failed to update content", Toast.LENGTH_SHORT).show();
                     Log.e("Firebase", "Failed to update content", e);
                 });
@@ -469,7 +488,6 @@ public class AdminEditContent extends AppCompatActivity implements ImagesAdapter
     private void deleteContent() {
         databaseReference.removeValue()
                 .addOnSuccessListener(aVoid -> {
-                    // Success
                     Toast.makeText(AdminEditContent.this, "Content deleted successfully", Toast.LENGTH_SHORT).show();
                     finish(); // Close the activity or redirect as needed
                 })

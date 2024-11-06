@@ -64,11 +64,35 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Product Brand:"
-            android:textSize="14sp"
+            android:text="brand"
+            android:textSize="16sp"
             app:layout_constraintTop_toTopOf="@id/brandLabel"
             app:layout_constraintBottom_toBottomOf="@id/brandLabel"
             app:layout_constraintStart_toEndOf="@id/brandLabel"/>
+
+        <TextView
+            android:id="@+id/nameLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="Product Name:"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/brandLabel"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="190dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="name"
+            android:textSize="16sp"
+            app:layout_constraintTop_toTopOf="@id/nameLabel"
+            app:layout_constraintBottom_toBottomOf="@id/nameLabel"
+            app:layout_constraintStart_toEndOf="@id/nameLabel"/>
 
         <TextView
             android:id="@+id/typeLabel"
@@ -80,7 +104,7 @@
             android:textSize="16sp"
             android:textColor="@color/black"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/brandLabel"
+            app:layout_constraintTop_toBottomOf="@id/nameLabel"
             app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
@@ -88,8 +112,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Product Type:"
-            android:textSize="14sp"
+            android:text="type"
+            android:textSize="16sp"
             app:layout_constraintTop_toTopOf="@id/typeLabel"
             app:layout_constraintBottom_toBottomOf="@id/typeLabel"
             app:layout_constraintStart_toEndOf="@id/typeLabel"/>
@@ -112,11 +136,35 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
-            android:text="Product function:"
-            android:textSize="14sp"
+            android:text="function"
+            android:textSize="16sp"
             app:layout_constraintTop_toTopOf="@id/functionLabel"
             app:layout_constraintBottom_toBottomOf="@id/functionLabel"
             app:layout_constraintStart_toEndOf="@id/functionLabel"/>
+
+        <TextView
+            android:id="@+id/afterUseLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="After Use:"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/functionLabel"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/afterUse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="after use"
+            android:textSize="16sp"
+            app:layout_constraintTop_toTopOf="@id/afterUseLabel"
+            app:layout_constraintBottom_toBottomOf="@id/afterUseLabel"
+            app:layout_constraintStart_toEndOf="@id/afterUseLabel"/>
 
 <!--        <TextView-->
 <!--            android:id="@+id/skinTypeLabel"-->
@@ -152,20 +200,67 @@
             android:textSize="16sp"
             android:textColor="@color/black"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/functionLabel"
+            app:layout_constraintTop_toBottomOf="@id/afterUse"
             app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
             android:id="@+id/ingredients"
-            android:layout_width="wrap_content"
+            android:layout_width="310dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="20dp"
             android:text="ingredients"
-            android:textSize="14sp"
+            android:textSize="16sp"
             app:layout_constraintTop_toBottomOf="@id/ingredientLabel"
             app:layout_constraintStart_toStartOf="@id/ingredientLabel"/>
 
+<!--        <TextView-->
+<!--            android:id="@+id/feedbackLabel"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:text="Feedbacks:"-->
+<!--            android:textSize="16sp"-->
+<!--            android:textColor="@color/black"-->
+<!--            android:textStyle="bold"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/ingredients"-->
+<!--            app:layout_constraintStart_toStartOf="parent"/>-->
+
+<!--        <RatingBar-->
+<!--            android:id="@+id/rating"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="40dp"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:numStars="5"-->
+<!--            android:stepSize="1"-->
+<!--            android:rating="0"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/feedbackLabel"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            android:layout_marginTop="4dp" />-->
+
+<!--        <EditText-->
+<!--            android:id="@+id/feedbackInput"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="10dp"-->
+<!--            android:layout_marginEnd="10dp"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:hint="Write your feedback"-->
+<!--            android:backgroundTint="@color/black"-->
+<!--            android:textColor="@color/black"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/rating"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintEnd_toStartOf="@+id/submitFeedbackButton"/>-->
+
+<!--        <Button-->
+<!--            android:id="@+id/submitFeedbackButton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Submit"-->
+<!--            app:layout_constraintTop_toTopOf="@id/feedbackInput"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            android:layout_marginEnd="10dp"/>-->
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/fragment_container"
     tools:context=".SkinAnalysis">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -72,7 +73,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cameraFrame"
             app:layout_constraintEnd_toStartOf="@id/upload_button"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="120dp"
             android:tooltipText="Capture Image"
             android:background="@drawable/round_button"
             android:gravity="center_vertical|center_horizontal"

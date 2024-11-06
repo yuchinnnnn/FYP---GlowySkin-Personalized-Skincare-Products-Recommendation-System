@@ -37,7 +37,7 @@ public class SkinCareTipAdapter extends RecyclerView.Adapter<SkinCareTipAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SkinCareTip tip = skinCareTipsList.get(position);
-        holder.title.setText(tip.getTitle());
+//        holder.title.setText(tip.getTitle());
         holder.cardView.setOnClickListener(v -> {
             Intent intent = new Intent(context, TipDetails.class);
             intent.putExtra("tipId", tip.getId());  // Pass the tipId with the key "tipId"
@@ -49,10 +49,10 @@ public class SkinCareTipAdapter extends RecyclerView.Adapter<SkinCareTipAdapter.
 
         if (coverImage != null && !coverImage.isEmpty()) {
             // Construct the full Firebase Storage URL for the cover image
-            String storageUrl = "https://firebasestorage.googleapis.com/v0/b/personalized-skincare-products.appspot.com/o/Skincare_tips_image%2F"
-                    + coverImage + "?alt=media";
             Glide.with(context)
-                    .load(storageUrl)
+                    .load(coverImage)  // Load the URL string with Glide
+                    .placeholder(R.drawable.baseline_image_24) // Optional placeholder
+                    .error(R.drawable.baseline_image_24)       // Optional error image
                     .into(holder.imageView);
         }
         else if(coverImage == null && images !=null) {
@@ -77,8 +77,8 @@ public class SkinCareTipAdapter extends RecyclerView.Adapter<SkinCareTipAdapter.
 
         ViewHolder(View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.tipTitle);
-            imageView = itemView.findViewById(R.id.tipImage);
+//            title = itemView.findViewById(R.id.tipTitle);
+            imageView = itemView.findViewById(R.id.coverImage);
             cardView = itemView.findViewById(R.id.cardView);
         }
     }

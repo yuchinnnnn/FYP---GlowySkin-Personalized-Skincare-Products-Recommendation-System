@@ -67,11 +67,12 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
                     new SweetAlertDialog(SkinTypeQuiz1.this, SweetAlertDialog.WARNING_TYPE)
                             .setTitleText("Confirm Change")
                             .setContentText("Are you sure you want to change your answer?")
-                            .setConfirmText("Yes, change it!")
-                            .setCancelText("No, keep it")
+                            .setConfirmText("Yes!")
+                            .setCancelText("No")
                             .setConfirmClickListener(sDialog -> {
                                 sDialog.dismissWithAnimation();
                                 updateSkinTypeInDatabase();
+                                Toast.makeText(SkinTypeQuiz1.this, "Skin type updated successfully", Toast.LENGTH_SHORT).show();
                             })
                             .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
                             .show();
@@ -92,6 +93,7 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
             HomeFragment homeFragment = HomeFragment.newInstance(userId);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, homeFragment)
+                    .addToBackStack(null) // Adds the transaction to the back stack
                     .commit();
         });
     }
@@ -137,12 +139,20 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
     }
 
     private void highlightSkinType(LinearLayout selectedLayout) {
-        dry.setBackgroundColor(getResources().getColor(R.color.light_grey));
-        normal.setBackgroundColor(getResources().getColor(R.color.light_grey));
-        combination.setBackgroundColor(getResources().getColor(R.color.light_grey));
-        oil.setBackgroundColor(getResources().getColor(R.color.light_grey));
+        // Set all options to unselected
+        dry.setSelected(false);
+        normal.setSelected(false);
+        combination.setSelected(false);
+        oil.setSelected(false);
 
-        selectedLayout.setBackgroundColor(getResources().getColor(R.color.pink));
+        // Set the background resource for each option
+        dry.setBackgroundResource(R.drawable.combination_background);
+        normal.setBackgroundResource(R.drawable.combination_background);
+        combination.setBackgroundResource(R.drawable.combination_background);
+        oil.setBackgroundResource(R.drawable.combination_background);
+
+        // Highlight the selected layout
+        selectedLayout.setSelected(true);
     }
 
     private void updateSkinTypeInDatabase() {
@@ -153,6 +163,7 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
                         intent.putExtra(ARG_USER_ID, userId);
                         intent.putExtra(ARG_SELECTED_SKIN_TYPE, selectedSkinType);
                         startActivity(intent);
+                        Toast.makeText(SkinTypeQuiz1.this, "Answer saved", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(SkinTypeQuiz1.this, "Failed to save answer", Toast.LENGTH_SHORT).show();
                     }

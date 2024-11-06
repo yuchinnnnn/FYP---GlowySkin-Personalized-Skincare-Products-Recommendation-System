@@ -10,10 +10,11 @@ public class Content {
     // Required empty constructor for Firebase
     public Content() {}
 
-    public Content(String title, String uploadDateTime, List<String> imageUrls) {
+    public Content(String title, String uploadDateTime, List<String> imageUrls, String coverImage) {
         this.title = title;
         this.uploadDateTime = uploadDateTime;
         this.imageUrls = imageUrls;
+        this.coverImage = coverImage;
     }
 
     public String getId() {

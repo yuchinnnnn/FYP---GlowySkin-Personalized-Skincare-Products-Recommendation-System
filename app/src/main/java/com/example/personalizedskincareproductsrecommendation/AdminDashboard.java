@@ -35,7 +35,7 @@ public class AdminDashboard extends AppCompatActivity {
     private int dotsCount;
     private ImageView[] dots;
     private TextView greeting;
-    private Button addContent, manageUserProfile, viewFeedback, editProducts;
+    private Button addContent, manageUserProfile, viewDashboard, editProducts;
     private String userId;
     public static final String ARG_USER_ID = "userId";
 
@@ -106,8 +106,8 @@ public class AdminDashboard extends AppCompatActivity {
         manageUserProfile = findViewById(R.id.manage_user_profile);
         manageUserProfile.setOnClickListener(v -> openActivity(AdminManageProfile.class));
 
-        viewFeedback = findViewById(R.id.view_feedback);
-        viewFeedback.setOnClickListener(v -> openActivity(AdminViewFeedback.class));
+        viewDashboard = findViewById(R.id.view_dashboard);
+        viewDashboard.setOnClickListener(v -> openActivity(AdminViewDashboard.class));
 
         editProducts = findViewById(R.id.edit_product);
         editProducts.setOnClickListener(v -> openActivity(AdminManageProducts.class));
@@ -116,6 +116,9 @@ public class AdminDashboard extends AppCompatActivity {
     private void openActivity(Class<?> activityClass) {
         Intent intent = new Intent(AdminDashboard.this, activityClass);
         intent.putExtra(AdminAddContent.ARG_USER_ID, userId);
+        intent.putExtra(AdminManageProfile.ARG_USER_ID, userId);
+        intent.putExtra(AdminViewDashboard.ARG_USER_ID, userId);
+        intent.putExtra(AdminManageProducts.ARG_USER_ID, userId);
         startActivity(intent);
     }
 
@@ -202,6 +205,10 @@ public class AdminDashboard extends AppCompatActivity {
             case R.id.skincare_tips:
                 Log.d("AdminDashboard", "Manage Content clicked");
                 openActivity(AdminManageContent.class);
+                break;
+            case R.id.manage_product:
+                Log.d("AdminDashboard", "Manage Products clicked");
+                openActivity(AdminManageProducts.class);
                 break;
             case R.id.manage_account:
                 Log.d("AdminDashboard", "Manage User Account clicked");

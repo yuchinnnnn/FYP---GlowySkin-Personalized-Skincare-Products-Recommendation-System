@@ -2,6 +2,7 @@ package com.example.personalizedskincareproductsrecommendation;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,21 +50,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
         holder.title.setText(content.getTitle());
         holder.date.setText(content.getUploadDateTime());
 
-        // Construct the full URL for the cover image from the Firebase Storage path
-        String coverImage = content.getCoverImage();
-        String userId = content.getUserId(); // Assuming each content has a userId field
-
-        if (coverImage != null && !coverImage.isEmpty()) {
-            // Construct the full Firebase Storage URL for the cover image
-            String storageUrl = "https://firebasestorage.googleapis.com/v0/b/personalized-skincare-products.appspot.com/o/Skincare_tips_image%2F"
-                    + userId + "%2F" + coverImage + "?alt=media";
-
+        // Load cover image using Glide
+        String coverImageUri = content.getCoverImage(); // Assuming coverImageUri is the URL string
+        if (coverImageUri != null && !coverImageUri.isEmpty()) {
             Glide.with(context)
-                    .load(storageUrl)  // Load the full URL
+                    .load(coverImageUri)  // Load the URL string with Glide
+                    .placeholder(R.drawable.baseline_image_24) // Optional placeholder
+                    .error(R.drawable.baseline_image_24)       // Optional error image
                     .into(holder.imageView);
         } else {
-            // Set a default image if no cover image is available
-            holder.imageView.setImageResource(R.drawable.baseline_image_24);  // Placeholder image
+            // Set a default image if no cover image URL is available
+            holder.imageView.setImageResource(R.drawable.baseline_image_24);
         }
 
         // Set Edit button click listener
@@ -74,6 +71,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
             context.startActivity(intent);
         });
     }
+
 
     @Override
     public int getItemCount() {

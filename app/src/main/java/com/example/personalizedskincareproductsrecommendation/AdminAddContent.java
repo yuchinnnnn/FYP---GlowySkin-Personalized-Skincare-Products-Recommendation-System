@@ -126,7 +126,8 @@ public class AdminAddContent extends AppCompatActivity {
         skincareTipsDatabaseReference = FirebaseDatabase.getInstance().getReference("SkincareTips");
 
         categoryDropdown = findViewById(R.id.hint_text);
-        String[] categories = new String[]{"For All Skin Type", "For Oily Skin", "For Dry Skin", "For Combination Skin", "For Sensitive Skin"};
+        String[] categories = new String[]{"For All Skin Type", "For Oily Skin", "For Dry Skin",
+                "For Combination Skin", "For Sensitive Skin"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, categories);
         categoryDropdown.setAdapter(adapter);
 
@@ -171,7 +172,7 @@ public class AdminAddContent extends AppCompatActivity {
                 return;
             }
 
-            showConfirmationDialog();
+//            showConfirmationDialog();
 
             // Save the content
             saveContent(category, titleText, descriptionText);
@@ -211,17 +212,18 @@ public class AdminAddContent extends AppCompatActivity {
     }
 
     private void uploadCoverImage(Uri imageUri) {
-        String tipsTitle = title.getText().toString().trim().replaceAll("\\s+", "_"); // Replace spaces with underscores
-        String coverImageName = tipsTitle + "_cover.jpg"; // Format: tipsTitle_cover.jpg
-        StorageReference coverImageRef = storageReference.child(coverImageName);
+        // Construct the storage path for the cover image
+        StorageReference coverImageRef = storageReference.child("/coverImage/" + System.currentTimeMillis() + ".jpg");
 
         coverImageRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
+                    // Get the download URL of the uploaded cover image
                     coverImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        coverImageUrl = coverImageName;
+                        coverImageUrl = uri.toString(); // Get the download URL as a string
                         uploadedCoverImage = coverImageUrl;
-                        uploadCoverButton.setVisibility(View.GONE);
-                        uploadedCover.setVisibility(View.VISIBLE);
+
+                        uploadCoverButton.setVisibility(View.GONE); // Hide upload button
+                        uploadedCover.setVisibility(View.VISIBLE); // Show uploaded cover section
                         coverImageLabel.setVisibility(View.VISIBLE);
                         coverImageLabel.setText(coverImageUrl); // Show the URL
 
@@ -235,6 +237,7 @@ public class AdminAddContent extends AppCompatActivity {
                             uploadedCover.setVisibility(View.GONE); // Hide the uploaded cover section
                             cancelCoverImage.setVisibility(View.GONE); // Hide the cancel button
                         });
+
                         Log.d(TAG, "Cover image uploaded successfully: " + coverImageUrl);
                     });
                 })
@@ -242,6 +245,7 @@ public class AdminAddContent extends AppCompatActivity {
                     Log.e(TAG, "Failed to upload cover image: " + e.getMessage());
                 });
     }
+
 
     private void showUploadImageDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -268,14 +272,12 @@ public class AdminAddContent extends AppCompatActivity {
             startActivity(intent);
         });
         sweetAlertDialog.show();
-        title.setText("");
-        description.setText("");
-        uploadedImage.setImageResource(R.drawable.skin_care); // Reset image preview
     }
 
     private void loadUploadedImage(String userId) {
         // Construct the path to the user's profile photo URL
-        DatabaseReference profileImageRef = skincareTipsDatabaseReference.child("skincare_tips_image").child(userId);
+        DatabaseReference profileImageRef = skincareTipsDatabaseReference
+                .child("skincare_tips_image").child(userId);
 
         profileImageRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -341,11 +343,12 @@ public class AdminAddContent extends AppCompatActivity {
             skincareTipsDatabaseReference.child(tipId).updateChildren(tipsData)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(AdminAddContent.this, "Content saved successfully", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
-                            intent.putExtra("userId", userId);
-                            startActivity(intent);
-                            uploadContentPhotos(tipId); // Upload the selected images
+                            showConfirmationDialog();
+//                            Toast.makeText(AdminAddContent.this, "Content saved successfully", Toast.LENGTH_SHORT).show();
+//                            Intent intent = new Intent(AdminAddContent.this, AdminDashboard.class);
+//                            intent.putExtra("userId", userId);
+//                            startActivity(intent);
+                            uploadContentPhotos(userId, tipId); // Upload the selected images
                         } else {
                             Toast.makeText(AdminAddContent.this, "Failed to save content", Toast.LENGTH_SHORT).show();
                         }
@@ -353,14 +356,17 @@ public class AdminAddContent extends AppCompatActivity {
         }
     }
 
-    private void uploadContentPhotos(String tipId) {
+    private void uploadContentPhotos(String userId, String tipId) {
         if (uploadedImages.isEmpty()) return; // Check if the list is empty
 
         // Loop through all the selected images
         for (Uri imageUri : uploadedImages) {
-            // Create a unique reference for each image using the tipId and timestamp
-            String imageName = tipId + "_" + System.currentTimeMillis() + "_skincare_tips_image.jpg";
-            StorageReference photoRef = storageReference.child(imageName);
+            // Create a unique image name using tipId and current timestamp to avoid overwriting
+            String imageName = System.currentTimeMillis() + ".jpg";
+
+            // Create the path for the image
+            String imagePath = "/tipsImage/" + imageName;
+            StorageReference photoRef = storageReference.child(imagePath);
 
             UploadTask uploadTask = photoRef.putFile(imageUri);
             uploadTask.addOnSuccessListener(taskSnapshot -> {
@@ -381,4 +387,6 @@ public class AdminAddContent extends AppCompatActivity {
             });
         }
     }
+
+
 }

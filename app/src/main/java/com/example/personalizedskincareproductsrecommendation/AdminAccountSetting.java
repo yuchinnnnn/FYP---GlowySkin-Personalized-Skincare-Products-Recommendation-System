@@ -248,12 +248,12 @@ public class AdminAccountSetting extends AppCompatActivity {
         databaseReference.updateChildren(updates)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(AdminAccountSetting.this, "Contact updated successfully", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdminAccountSetting.this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
                         if (imageUri != null) {
                             uploadProfilePhoto();
                         }
                     } else {
-                        Toast.makeText(AdminAccountSetting.this, "Failed to update contact", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdminAccountSetting.this, "Failed to update profile", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

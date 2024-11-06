@@ -107,7 +107,8 @@ public class SignUp extends AppCompatActivity {
                 }
 
                 if (!isPasswordStrong(pass)) {
-                    signupPassword.setError("Password must be at least 8 characters long, include uppercase, lowercase, digit, and special character.");
+                    signupPassword.setError("Password must be at least 8 characters long, include uppercase, " +
+                            "lowercase, digit, and special character.");
                     return;
                 }
 

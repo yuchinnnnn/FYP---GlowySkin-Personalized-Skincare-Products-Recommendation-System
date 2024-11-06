@@ -2,6 +2,7 @@ package com.example.personalizedskincareproductsrecommendation;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -14,7 +15,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
@@ -54,11 +57,21 @@ public class AfternoonReminder extends AppCompatActivity {
 
         setButton = findViewById(R.id.set_button);
         setButton.setEnabled(false);
-        setButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showConfirmDialog();
+        setButton.setOnClickListener(v -> {
+            if (!isAnyDaySelected()) {
+                // Display error message for no days selected
+                new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                        .setTitleText("Selection Required")
+                        .setContentText("Please select at least one day.")
+                        .setConfirmText("OK")
+                        .show();
+                return;
             }
+
+            String time = getValidTime();
+
+            // Show confirmation dialog if time is valid
+            showConfirmDialog(time);
         });
 
         cancel = findViewById(R.id.cancel_button);
@@ -77,7 +90,31 @@ public class AfternoonReminder extends AppCompatActivity {
         });
     }
 
-    private void showConfirmDialog() {
+    private boolean isAnyDaySelected() {
+        return sun.isChecked() || mon.isChecked() || tue.isChecked() ||
+                wed.isChecked() || thurs.isChecked() || fri.isChecked() ||
+                sat.isChecked();
+    }
+
+    private String getValidTime() {
+        int hour = timepicker.getHour();
+        int minute = timepicker.getMinute();
+
+        // Validate selected time
+        if (hour <= 12 || hour >= 17) {
+            new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                    .setTitleText("Invalid Time")
+                    .setContentText("Please select a time between 12 PM and 16:59 PM.")
+                    .setConfirmText("OK")
+                    .show();
+            return null; // Return null if time is invalid
+        }
+
+        // Format time as a string
+        return String.format("%02d:%02d", hour, minute);
+    }
+
+    private void showConfirmDialog(String time) {
         SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE);
         sweetAlertDialog.setTitle("Are you sure?");
         sweetAlertDialog.setContentText("Do you want to set the reminder?");
@@ -86,8 +123,9 @@ public class AfternoonReminder extends AppCompatActivity {
             @Override
             public void onClick(SweetAlertDialog sDialog) {
                 sDialog.dismissWithAnimation();
-                saveReminderToFirebase();
-                finish();
+                if (time !=null){
+                    saveReminderToFirebase(time);
+                }
             }
         });
         sweetAlertDialog.setCancelText("No");
@@ -100,73 +138,51 @@ public class AfternoonReminder extends AppCompatActivity {
         sweetAlertDialog.show();
     }
 
-    private void saveReminderToFirebase() {
-        // Retrieve the selected time
-        int hour = timepicker.getHour();
-        int minute = timepicker.getMinute();
-
-        // Check if the time is in the morning session
-        if (hour <= 12 || hour >= 17) {
-            Toast.makeText(this, "Please select a time before 17PM and after 12PM", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String time = String.format("%02d:%02d", hour, minute);
-
+    private void saveReminderToFirebase(String time) {
         // Retrieve the selected days
-        StringBuilder markedDays = new StringBuilder();
-        if (sun.isChecked()) {
-            markedDays.append("Sunday,");
-        }
-        if (mon.isChecked()) {
-            markedDays.append("Monday,");
-        }
-        if (tue.isChecked()) {
-            markedDays.append("Tuesday,");
-        }
-        if (wed.isChecked()) {
-            markedDays.append("Wednesday,");
-        }
-        if (thurs.isChecked()) {
-            markedDays.append("Thursday,");
-        }
-        if (fri.isChecked()) {
-            markedDays.append("Friday,");
-        }
-        if (sat.isChecked()) {
-            markedDays.append("Saturday,");
-        }
+        List<String> selectedDays = new ArrayList<>();
+        if (sun.isChecked()) selectedDays.add("Sunday");
+        if (mon.isChecked()) selectedDays.add("Monday");
+        if (tue.isChecked()) selectedDays.add("Tuesday");
+        if (wed.isChecked()) selectedDays.add("Wednesday");
+        if (thurs.isChecked()) selectedDays.add("Thursday");
+        if (fri.isChecked()) selectedDays.add("Friday");
+        if (sat.isChecked()) selectedDays.add("Saturday");
 
-        // Remove the last comma if it exists
-        if (markedDays.length() > 0 && markedDays.charAt(markedDays.length() - 1) == ',') {
-            markedDays.deleteCharAt(markedDays.length() - 1);
-        }
+        // Join the selected days
+        String daysString = TextUtils.join(",", selectedDays);
 
         // Prepare data to be saved
         Map<String, Object> reminderData = new HashMap<>();
         reminderData.put("title", "Afternoon Reminder");
         reminderData.put("time", time);
-        reminderData.put("days", markedDays.toString());
+        reminderData.put("days", daysString);
         reminderData.put("isRemoved", false);
         reminderData.put("isPassed", false);
 
         // Retrieve user ID from Intent
         userId = getIntent().getStringExtra(ARG_USER_ID);
-
         if (userId == null) {
             Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
-        // Initialize FirebaseAuth and DatabaseReference
-        mAuth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("Reminders").child(userId).child("afternoon_reminder");
-
         // Save to Firebase
-        databaseReference.setValue(reminderData).addOnCompleteListener(task -> {
+        databaseReference.child(userId).child("afternoon_reminder").setValue(reminderData).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                Toast.makeText(AfternoonReminder.this, "Reminder set successfully", Toast.LENGTH_SHORT).show();
+                SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(AfternoonReminder.this, SweetAlertDialog.SUCCESS_TYPE);
+                sweetAlertDialog.setTitle("Reminder Set");
+                sweetAlertDialog.setContentText("Reminder set successfully");
+                sweetAlertDialog.setConfirmText("OK");
+                sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog sDialog) {
+                        sDialog.dismissWithAnimation();
+                        finish();
+                    }
+                });
+                sweetAlertDialog.show();
             } else {
                 Toast.makeText(AfternoonReminder.this, "Failed to set reminder", Toast.LENGTH_SHORT).show();
             }

@@ -103,11 +103,11 @@ public class AdminViewDashboard extends AppCompatActivity {
 
                 for (DataSnapshot skinTypeSnapshot : dataSnapshot.getChildren()) {
                     String skinType = skinTypeSnapshot.child("result").getValue(String.class);
-                    if ("Oily Skin".equals(skinType)) {
+                    if (skinType.contains("Oil")) {
                         oilyCount++;
-                    } else if ("Dry Skin".equals(skinType)) {
+                    } else if (skinType.contains("Dry")) {
                         dryCount++;
-                    } else if ("Normal Skin".equals(skinType)) {
+                    } else if (skinType.contains("Normal")) {
                         normalCount++;
                     }
                 }

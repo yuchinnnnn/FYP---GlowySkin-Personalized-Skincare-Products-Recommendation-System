@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTint="@color/white"
+    android:id="@+id/fragment_container"
     tools:context=".HistoryFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -63,8 +64,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@+id/tab_layout">
-
         </androidx.viewpager.widget.ViewPager>
+<!--        -->
+<!--        <ScrollView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/tab_layout"-->
+<!--            app:layout_constraintStart_toStartOf="parent">-->
+<!--            -->
+<!--        </ScrollView>-->
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

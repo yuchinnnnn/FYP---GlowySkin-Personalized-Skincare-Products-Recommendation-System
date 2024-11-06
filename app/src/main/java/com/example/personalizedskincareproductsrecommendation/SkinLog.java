@@ -281,18 +281,28 @@ public class SkinLog extends AppCompatActivity {
         new SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
                 .setTitleText("Are you sure?")
                 .setContentText("Once saved, you cannot change the images.")
-                .setConfirmText("Yes, save it!")
-                .setCancelText("No, cancel!")
+                .setConfirmText("Yes!")
+                .setCancelText("No")
                 .setConfirmClickListener(sweetAlertDialog -> {
                     sweetAlertDialog.dismiss();
+                    if(!isUpload()){
+                        new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                                .setTitleText("Image Required")
+                                .setContentText("Please upload all the photos before saving.")
+                                .setConfirmText("OK")
+                                .show();
+                        return;
+                    }
                     saveAllImages();
-                    finish();
                 })
                 .setCancelClickListener(SweetAlertDialog::dismiss)
                 .show();
     }
 
-    // Save all selfies in the database
+    private boolean isUpload() {
+        return leftUri != null && frontUri != null && rightUri != null && neckUri != null;
+    }
+
     // Save all selfies in the database
     private void saveAllImages() {
         if (leftUri == null || frontUri == null || rightUri == null || neckUri == null) {
@@ -316,13 +326,22 @@ public class SkinLog extends AppCompatActivity {
         // Save the SkinLogData object to Firebase under the new logId
         databaseReference.child(logId).setValue(skinLogEntry)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(SkinLog.this, "Skin log saved successfully", Toast.LENGTH_SHORT).show();
-                    // Clear the image views
+                    SweetAlertDialog sweetAlertDialog = new SweetAlertDialog(SkinLog.this, SweetAlertDialog.SUCCESS_TYPE);
+                    sweetAlertDialog.setTitle("Skin Log Saved");
+                    sweetAlertDialog.setContentText("Skin log is saved successfully");
+                    sweetAlertDialog.setConfirmText("OK");
+                    sweetAlertDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sDialog) {
+                            sDialog.dismissWithAnimation();
+                            finish();
+                        }
+                    });
+                    sweetAlertDialog.show();
                     clearImageViews();
                 })
                 .addOnFailureListener(e -> Toast.makeText(SkinLog.this, "Failed to save skin log", Toast.LENGTH_SHORT).show());
     }
-
 
     // Clear image views after saving
     private void clearImageViews() {

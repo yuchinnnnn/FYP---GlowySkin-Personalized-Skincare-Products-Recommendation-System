@@ -1,13 +1,16 @@
 package com.example.personalizedskincareproductsrecommendation;
 
+import com.google.firebase.database.PropertyName;
+
 public class Product {
-    private String brand, name, country, function, ingredients, afterUse, type, side_effect, skinType;
-    private String imageUrl;
+    private String id, brand, name, country, function, ingredients, afterUse, type, side_effect, skinType;
+    private String image_url;
 
     // Default constructor is required for Firestore
     public Product() {}
 
-    public Product(String brand, String name, String country, String function, String ingredients, String afterUse, String type, String side_effect,String imageUrl) {
+    public Product(String id, String brand, String name, String country, String function, String ingredients, String afterUse, String type, String side_effect,String image_url) {
+        this.id = id;
         this.brand = brand;
         this.name = name;
         this.country = country;
@@ -16,7 +19,15 @@ public class Product {
         this.afterUse = afterUse;
         this.type = type;
         this.side_effect = side_effect;
-        this.imageUrl = imageUrl;
+        this.image_url = image_url;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getBrand() {
@@ -91,20 +102,12 @@ public class Product {
         this.type = type;
     }
 
-    public String getSideEffect() {
-        return side_effect;
-    }
-
-    public void setSideEffect(String side_effect) {
-        this.side_effect = side_effect;
-    }
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
     public String getImageUrl() {
-        return imageUrl;
+        return image_url;
     }
 
+    public void setImageUrl(String image_url) {
+        this.image_url = image_url;
+    }
 }
 

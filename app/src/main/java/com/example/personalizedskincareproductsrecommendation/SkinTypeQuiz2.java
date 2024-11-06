@@ -78,11 +78,12 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
                     new SweetAlertDialog(SkinTypeQuiz2.this, SweetAlertDialog.WARNING_TYPE)
                             .setTitleText("Confirm Change")
                             .setContentText("Are you sure you want to change your answer?")
-                            .setConfirmText("Yes, change it!")
-                            .setCancelText("No, keep it")
+                            .setConfirmText("Yes!")
+                            .setCancelText("No")
                             .setConfirmClickListener(sDialog -> {
                                 sDialog.dismissWithAnimation();
                                 updateSensitiveInDatabase();
+                                Toast.makeText(SkinTypeQuiz2.this, "Skin type updated successfully", Toast.LENGTH_SHORT).show();
                             })
                             .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
                             .show();
@@ -100,10 +101,12 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Inside your Activity
         back.setOnClickListener(v -> {
             HomeFragment homeFragment = HomeFragment.newInstance(userId);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, homeFragment)
+                    .addToBackStack(null) // Adds the transaction to the back stack
                     .commit();
         });
     }
@@ -155,6 +158,7 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
                         Intent intent = new Intent(SkinTypeQuiz2.this, SkinTypeQuiz3.class);
                         intent.putExtra(ARG_USER_ID, userId);
                         startActivity(intent);
+                        Toast.makeText(SkinTypeQuiz2.this, "Answer saved", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(SkinTypeQuiz2.this, "Failed to save answer", Toast.LENGTH_SHORT).show();
                     }

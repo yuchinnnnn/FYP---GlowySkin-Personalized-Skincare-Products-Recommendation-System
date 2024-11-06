@@ -82,6 +82,7 @@ public class ActiveUsers extends Fragment {
         return rootView;
     }
 
+
     private void fetchActiveUsers() {
         userReference.orderByChild("status").equalTo("active").addValueEventListener(new ValueEventListener() {
             @Override

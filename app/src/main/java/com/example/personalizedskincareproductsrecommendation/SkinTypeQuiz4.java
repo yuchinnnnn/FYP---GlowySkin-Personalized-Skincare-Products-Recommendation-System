@@ -80,6 +80,13 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
             startActivity(intent);
         });
 
+        back.setOnClickListener(v -> {
+            HomeFragment homeFragment = HomeFragment.newInstance(userId);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, homeFragment)
+                    .commit();
+        });
+
         save.setOnClickListener(v -> {
             if (selectedEnvironment != null) {
                 // Save the selected environment to the database
@@ -210,13 +217,19 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
     }
 
     private void selectEnvironment(String answer, LinearLayout selectedLayout) {
-        travel.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
-        makeup.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
-        outdoor.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
-        humid.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
-        urban.setBackgroundColor(ContextCompat.getColor(this, R.color.light_grey));
+        travel.setSelected(false);
+        makeup.setSelected(false);
+        outdoor.setSelected(false);
+        humid.setSelected(false);
+        urban.setSelected(false);
 
-        selectedLayout.setBackgroundColor(ContextCompat.getColor(this, R.color.pink));
+        travel.setBackgroundResource(R.drawable.combination_background);
+        makeup.setBackgroundResource(R.drawable.combination_background);
+        outdoor.setBackgroundResource(R.drawable.combination_background);
+        humid.setBackgroundResource(R.drawable.combination_background);
+        urban.setBackgroundResource(R.drawable.combination_background);
+
+        selectedLayout.setSelected(true);
         selectedEnvironment = answer;
     }
 
@@ -277,6 +290,8 @@ public class SkinTypeQuiz4 extends AppCompatActivity {
             userQuizRef.child("skinTypeQuiz2").setValue(answerQuiz2);
             userQuizRef.child("skinTypeQuiz3").setValue(answerQuiz3);
             userQuizRef.child("skinTypeQuiz4").setValue(selectedEnvironment);
+
+            Toast.makeText(SkinTypeQuiz4.this, "Quiz results saved successfully", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(SkinTypeQuiz4.this, "User ID is not available", Toast.LENGTH_SHORT).show();
         }

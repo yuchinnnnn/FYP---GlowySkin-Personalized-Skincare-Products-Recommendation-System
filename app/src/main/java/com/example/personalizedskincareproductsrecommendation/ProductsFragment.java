@@ -47,22 +47,7 @@ public class ProductsFragment extends Fragment {
     private AutoCompleteTextView hintText;
     private ImageView back, filter;
     private ArrayAdapter<String> adapter;
-    private String userId, userSkinType, selectedCategories, selectedTypes;
-    private RecyclerView suggestedProductsRecyclerView;
-    private SuggestedProductAdapter suggestedProductAdapter;
-    private ArrayList<Product> suggestedProductList;
-
-
-    private static final String ARG_USER_ID = "userId";
-
-    // Factory method to create a new instance of this fragment using the provided userId
-    public static ProductsFragment newInstance(String userId) {
-        ProductsFragment fragment = new ProductsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_USER_ID, userId);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private String userId;
 
     // For fetching product item from firestore
     private FirebaseFirestore db;
@@ -76,6 +61,13 @@ public class ProductsFragment extends Fragment {
 
         products_category = view.findViewById(R.id.dropdown);
         hintText = view.findViewById(R.id.hint_text);
+
+        if (getArguments() != null) {
+            userId = getArguments().getString("ARG_USER_ID");
+            Log.d("ProductFragment", "User ID: " + userId); // Log userId
+        } else {
+            Log.e("ProductFragment", "Arguments are null!"); // Log if arguments are null
+        }
 
         back = view.findViewById(R.id.back);
         back.setOnClickListener(new View.OnClickListener() {
@@ -93,31 +85,12 @@ public class ProductsFragment extends Fragment {
             }
         });
 
-        // Retrieve user ID from arguments
-        Bundle args = getArguments();
-        if (args != null) {
-            userId = args.getString(ARG_USER_ID);
-        }
-
         db = FirebaseFirestore.getInstance();
         productListView = view.findViewById(R.id.product_list); // Update this to match your ListView ID
         productList = new ArrayList<>();
-        productAdapter = new ProductAdapter(getContext(), productList);
+        productAdapter = new ProductAdapter(getContext(), productList, userId);
+        Log.d("UserId passed", "UserId: " + userId);
         productListView.setAdapter(productAdapter);
-
-        // Initialize the RecyclerView for suggested products
-        suggestedProductsRecyclerView = view.findViewById(R.id.suggested_products_recycler_view);
-        suggestedProductList = new ArrayList<>();
-        suggestedProductAdapter = new SuggestedProductAdapter(getContext(), suggestedProductList);
-
-// Set LayoutManager for the RecyclerView
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        suggestedProductsRecyclerView.setLayoutManager(layoutManager);
-        suggestedProductsRecyclerView.setAdapter(suggestedProductAdapter);
-
-// Fetch suggested products from Firestore
-        fetchSuggestedProducts();
-
 
         // Fetch products from Firestore and populate the AutoCompleteTextView
         fetchProductsForAutocomplete();
@@ -126,48 +99,8 @@ public class ProductsFragment extends Fragment {
         return view;
     }
 
-    private void fetchSuggestedProducts() {
-        db.collection("skincare_products")
-                .whereEqualTo("skinType", userSkinType)  // Filter products by the user's skin type
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        suggestedProductList.clear();
-                        for (QueryDocumentSnapshot document : task.getResult()) {
-                            Product product = document.toObject(Product.class);
-
-                            if (document.contains("name")) {
-                                String brand = document.getString("brand");
-                                String name = document.getString("name");
-                                String productCategory = document.getString("function");  // Assuming 'function' is the category
-                                String productType = document.getString("type");
-
-                                product.setBrand(brand);
-                                product.setName(name);
-
-                                // Ensure that selectedCategories and selectedTypes are not null or empty
-                                boolean matchesCategory = selectedCategories == null || selectedCategories.isEmpty() || selectedCategories.contains(productCategory);
-                                boolean matchesType = selectedTypes == null || selectedTypes.isEmpty() || selectedTypes.contains(productType);
-
-                                // Add the product to the list if it matches either the category or the type
-                                if (matchesCategory && matchesType) {  // Use && for both filters, or || if matching either is enough
-                                    suggestedProductList.add(product);
-                                    Log.d(TAG, "Added Suggested Product: " + name);
-                                }
-                            }
-                        }
-
-                        // Notify the adapter of the updated list
-                        suggestedProductAdapter.notifyDataSetChanged();
-                    } else {
-                        Log.w(TAG, "Error getting suggested products.", task.getException());
-                    }
-                });
-    }
-
-
     private void fetchProductsForAutocomplete() {
-        db.collection("skincare_products")
+        db.collection("skin_care_product")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -187,7 +120,6 @@ public class ProductsFragment extends Fragment {
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                                 String item = adapterView.getItemAtPosition(i).toString();
                                 filterProductsBySelectedItem(item);
-                                Toast.makeText(getContext(), "Selected: " + item, Toast.LENGTH_SHORT).show();
                             }
                         });
                     } else {
@@ -197,7 +129,7 @@ public class ProductsFragment extends Fragment {
     }
 
     private void fetchProducts() {
-        db.collection("skincare_products")
+        db.collection("skin_care_product")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -207,13 +139,14 @@ public class ProductsFragment extends Fragment {
                             if (document.contains("name")) {
                                 String brand = document.getString("brand");
                                 String name = document.getString("name");
+                                String imageUrl = document.getString("image_url");
 
                                 product.setBrand(brand);
-                                product.setName(name);  // Set the name and brand
+                                product.setName(name);
+                                product.setImageUrl(imageUrl);
 
                                 // Add the product to the list
                                 productList.add(product);
-                                Log.d(TAG, "Added Product: " + name);
                             } else {
                                 Log.d(TAG, "Product does not exist.");
                             }
@@ -223,27 +156,6 @@ public class ProductsFragment extends Fragment {
                         productAdapter.notifyDataSetChanged();
                     } else {
                         Log.w(TAG, "Error getting documents.", task.getException());
-                    }
-                });
-    }
-
-    // Fetch the user's skin type based on the userId
-    private void fetchUserSkinType() {
-        db.collection("Users").document(userId)
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        if (task.getResult().exists() && task.getResult().contains("skinType")) {
-                            userSkinType = task.getResult().getString("skinType");
-                            Log.d(TAG, "User skin type: " + userSkinType);
-
-                            // Fetch the suggested products after retrieving skin type
-                            fetchSuggestedProducts();
-                        } else {
-                            Log.w(TAG, "User skin type not found.");
-                        }
-                    } else {
-                        Log.w(TAG, "Error getting user skin type.", task.getException());
                     }
                 });
     }
@@ -269,8 +181,9 @@ public class ProductsFragment extends Fragment {
 
     private void showCategoryFilterDialog() {
         // Define product categories
-        final String[] categories = {"Acne Treatment", "Anti-Aging Skin Care", "Brightening", "Dryness Control", "Oily Skin Care", "Pore Care", "Reduce Spots",
-        "Sensitive Skin Care"}; // Replace with your categories
+        final String[] categories = {"Acne Treatment", "Anti-Aging Skin Care", "Brightening",
+                "Dryness Control", "Oily Skin Care", "Pore Care", "Reduce Spots",
+                "Sensitive Skin Care"};
         boolean[] selectedCategories = new boolean[categories.length];
         ArrayList<String> selectedCategoryList = new ArrayList<>();
 
@@ -308,7 +221,7 @@ public class ProductsFragment extends Fragment {
         ArrayList<String> selectedTypeList = new ArrayList<>();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Select Brands");
+        builder.setTitle("Select Product Type");
 
         builder.setMultiChoiceItems(type, selectedTypes, (dialog, which, isChecked) -> {
             if (isChecked) {
@@ -333,16 +246,14 @@ public class ProductsFragment extends Fragment {
         for (Product product : productList) {
             boolean matchesCategory = selectedCategories.isEmpty() || selectedCategories.contains(product.getFunction());
             boolean matchesType = selectedTypes.isEmpty() || selectedTypes.contains(product.getType());
-            boolean matchesSkinType = product.getSkinType().equals(userSkinType);  // Make sure product skin type matches user's
 
-            if (matchesCategory && matchesType && matchesSkinType) {
+            if (matchesCategory && matchesType) {
                 filteredList.add(product);
             }
         }
 
         productAdapter.updateProductList(filteredList);
     }
-
 
     public void backHomepage() {
         HomeFragment homeFragment = HomeFragment.newInstance(userId);

@@ -4,12 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/fragment_container"
     tools:context=".SkinTypeQuiz1">
 
     <LinearLayout
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         android:gravity="top"
         android:orientation="vertical">
 
@@ -33,30 +36,40 @@
             android:textAlignment="center"/>
     </LinearLayout>
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/tips"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
         app:layout_constraintTop_toBottomOf="@+id/title"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
         android:orientation="horizontal">
 
         <ImageView
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="30dp"
+            android:id="@+id/image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/text"
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:src="@drawable/lamp"/>
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/text"
+            android:layout_width="260dp"
             android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/image"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:text="Tips: Wash your face and wait for 2 hours before applying other products. How does your face feels?"
+            android:layout_marginStart="6dp"
+            android:text="Tips: Wash your face and wait for 2 hours before applying any products. How does your face feels?"
             android:textColor="@color/black"
-            android:textSize="18sp"/>
-    </LinearLayout>
+            android:textSize="16sp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/dry"

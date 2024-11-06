@@ -70,11 +70,12 @@ public class SkinTypeQuiz3 extends AppCompatActivity {
                     new SweetAlertDialog(SkinTypeQuiz3.this, SweetAlertDialog.WARNING_TYPE)
                             .setTitleText("Confirm Change")
                             .setContentText("Are you sure you want to change your answer?")
-                            .setConfirmText("Yes, change it!")
-                            .setCancelText("No, keep it")
+                            .setConfirmText("Yes!")
+                            .setCancelText("No")
                             .setConfirmClickListener(sDialog -> {
                                 sDialog.dismissWithAnimation();
                                 updateSelection();
+                                Toast.makeText(SkinTypeQuiz3.this, "Reaction updated successfully", Toast.LENGTH_SHORT).show();
                             })
                             .setCancelClickListener(SweetAlertDialog::dismissWithAnimation)
                             .show();
@@ -129,11 +130,14 @@ public class SkinTypeQuiz3 extends AppCompatActivity {
 
     private void selectReaction(String answer, LinearLayout selectedLayout) {
         // Reset background color for all layouts
-        often.setBackgroundColor(getResources().getColor(R.color.light_grey));
-        rare.setBackgroundColor(getResources().getColor(R.color.light_grey));
+        often.setSelected(false);
+        rare.setSelected(false);
+
+        often.setBackgroundResource(R.drawable.combination_background);
+        rare.setBackgroundResource(R.drawable.combination_background);
 
         // Set background color for selected layout
-        selectedLayout.setBackgroundColor(getResources().getColor(R.color.pink));
+        selectedLayout.setSelected(true);
 
         // Store the selected reaction
         selectedReaction = answer;
@@ -144,6 +148,7 @@ public class SkinTypeQuiz3 extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         proceedToNextQuiz();
+                        Toast.makeText(SkinTypeQuiz3.this, "Answer saved", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(SkinTypeQuiz3.this, "Failed to save answer", Toast.LENGTH_SHORT).show();
                     }

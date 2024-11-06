@@ -40,6 +40,7 @@ public class SkinAnalysisResult extends AppCompatActivity {
     private RecyclerView recommendedProductsRecyclerView;
     private ImageView back, info, filter;
     private String userId, keyId, skinType, targetCondition, lowestCondition;
+    private float[] skinCondition;
     private FirebaseFirestore firestore;
     private RecommendedProductsAdapter recommendedProductsAdapter;
     private ArrayList<Product> productList;
@@ -70,7 +71,6 @@ public class SkinAnalysisResult extends AppCompatActivity {
 
     private boolean isProductRecommended(Product product, String targetCondition) {
         List<String> afterUses = Arrays.asList(product.getAfterUse().split(","));
-        List<String> functions = Arrays.asList(product.getFunction().split(","));
 
         // Check if the product matches the skin type
         boolean matchesSkinType = false;
@@ -117,10 +117,17 @@ public class SkinAnalysisResult extends AppCompatActivity {
         // Retrieve userId and keyId from Intent extras
         userId = getIntent().getStringExtra("ARG_USER_ID");
         keyId = getIntent().getStringExtra("ARG_ANALYSIS_ID");
-        if (userId == null || keyId == null) {
+//        skinType = getIntent().getStringExtra("ARG_SKIN_TYPE");
+//        skinCondition = getIntent().getFloatArrayExtra("ARG_SKIN_CONDITION");
+//        Log.d("Intent", "userId: " + userId + ", keyId: " + keyId + ", skinType: " + skinType + ", skinCondition: " + Arrays.toString(skinCondition));
+
+        if (userId == null || keyId == null ) {
             Log.e("Intent Error", "userId or keyId is null.");
             return;
         }
+
+        DatabaseReference analysisRef = FirebaseDatabase.getInstance().getReference("SkinAnalysis").child(userId).child(keyId);
+        Log.d("FirebaseData", "Attempting to retrieve data from path: " + analysisRef.toString());
 
         firestore = FirebaseFirestore.getInstance();
 
@@ -261,7 +268,7 @@ public class SkinAnalysisResult extends AppCompatActivity {
     }
 
     private void loadRecommendedProducts(String targetCondition) {
-        firestore.collection("skincare_products").get().addOnCompleteListener(task -> {
+        firestore.collection("skin_care_product").get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 productList.clear();
                 originalProductList.clear(); // Clear original list before adding new items

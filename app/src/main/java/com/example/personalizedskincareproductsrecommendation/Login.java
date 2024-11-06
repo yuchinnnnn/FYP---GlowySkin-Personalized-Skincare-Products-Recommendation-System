@@ -128,87 +128,31 @@ public class Login extends AppCompatActivity {
         Query checkUserDatabase = reference.orderByChild("username").equalTo(userUsername);
         Query checkAdminDatabase = adminReference.orderByChild("username").equalTo(userUsername);
 
+        // Check the Admin database first
         checkAdminDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    loginUsername.setError(null);
-                    boolean credentialsValid = false;
-                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                        String userId = userSnapshot.getKey(); // Get the user ID
-                        String usernameFromDB = userSnapshot.child("username").getValue(String.class);
-                        String hashedPasswordFromDB = userSnapshot.child("password").getValue(String.class);
-                        Log.d("Username", usernameFromDB); // Debug purpose
-
-                        if (Objects.equals(usernameFromDB, userUsername)) {
-                            loginUsername.setError(null); // Username is valid
-
-                            // Then, check if the password matches using BCrypt
-                            if (BCrypt.checkpw(userPassword, hashedPasswordFromDB)) {
-                                credentialsValid = true;
-                                loginUsername.setError(null);
-                                loginPassword.setError(null); // Both credentials are valid
-
-                                // Proceed to the next activity (Admin Dashboard)
-                                Intent intent = new Intent(Login.this, AdminDashboard.class);
-                                intent.putExtra("userId", userId); // Pass the user ID to the next screen
-                                startActivity(intent);
-                                Toast.makeText(Login.this, "Welcome " + usernameFromDB, Toast.LENGTH_SHORT).show();
-                                break; // Exit the loop if credentials are valid
+                    handleLogin(snapshot, userPassword, true);
+                } else {
+                    // Admin username not found, check the Users database
+                    checkUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot userSnapshot) {
+                            if (userSnapshot.exists()) {
+                                handleLogin(userSnapshot, userPassword, false);
                             } else {
-                                // Password is incorrect
-                                loginPassword.setError("Incorrect Password.");
-                                loginPassword.requestFocus();
-                                return;
+                                // Username not found in both Admin and Users databases
+                                loginUsername.setError("Username not found.");
+                                loginUsername.requestFocus();
                             }
                         }
-                    }
 
-                    // If no valid username and password were found
-                    if (!credentialsValid) {
-                        loginUsername.setError("Invalid Username or Password.");
-                        loginUsername.requestFocus();
-                    }
-                } else {
-                    // Username does not exist in the Admin database
-                    loginUsername.setError("Username not found.");
-                    loginUsername.requestFocus();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // Handle possible errors
-            }
-        });
-
-        checkUserDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    loginUsername.setError(null);
-                    boolean credentialsValid = false;
-                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                        String userId = userSnapshot.getKey(); // Get the user ID
-                        String usernameFromDB = userSnapshot.child("username").getValue(String.class);
-                        String hashedPasswordFromDB = userSnapshot.child("password").getValue(String.class);
-                        Log.d("Username", usernameFromDB); // Debug purpose
-
-                        // Verify password using BCrypt
-                        if (BCrypt.checkpw(userPassword, hashedPasswordFromDB)) {
-                            credentialsValid = true;
-                            loginUsername.setError(null);
-                            Intent intent = new Intent(Login.this, Homepage.class);
-                            intent.putExtra("userId", userId); // Pass the user ID to Homepage
-                            startActivity(intent);
-                            Toast.makeText(Login.this, "Welcome " + usernameFromDB, Toast.LENGTH_SHORT).show();
-                            break; // Exit the loop if credentials are valid
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            // Handle possible errors
                         }
-                    }
-                    if (!credentialsValid) {
-                        loginPassword.setError("Invalid Credentials.");
-                        loginPassword.requestFocus();
-                    }
+                    });
                 }
             }
 
@@ -218,4 +162,41 @@ public class Login extends AppCompatActivity {
             }
         });
     }
+
+    // Helper method to handle login logic based on database result
+    private void handleLogin(DataSnapshot snapshot, String userPassword, boolean isAdmin) {
+        boolean credentialsValid = false;
+        for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+            String userId = userSnapshot.getKey();
+            String usernameFromDB = userSnapshot.child("username").getValue(String.class);
+            String hashedPasswordFromDB = userSnapshot.child("password").getValue(String.class);
+
+            // Verify password using BCrypt
+            if (BCrypt.checkpw(userPassword, hashedPasswordFromDB)) {
+                credentialsValid = true;
+                loginUsername.setError(null);
+                loginPassword.setError(null); // Clear any previous error
+
+                // Proceed to the appropriate activity based on user type
+                Intent intent;
+                if (isAdmin) {
+                    intent = new Intent(Login.this, AdminDashboard.class);
+                    Toast.makeText(Login.this, "Welcome, Admin " + usernameFromDB, Toast.LENGTH_SHORT).show();
+                } else {
+                    intent = new Intent(Login.this, Homepage.class);
+                    Toast.makeText(Login.this, "Welcome, " + usernameFromDB, Toast.LENGTH_SHORT).show();
+                }
+                intent.putExtra("userId", userId); // Pass the user ID to the next screen
+                startActivity(intent);
+                break;
+            }
+        }
+
+        if (!credentialsValid) {
+            // If username found but password is incorrect
+            loginPassword.setError("Invalid Credentials.");
+            loginPassword.requestFocus();
+        }
+    }
+
 }
