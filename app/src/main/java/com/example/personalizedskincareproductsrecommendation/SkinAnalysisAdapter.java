@@ -48,7 +48,7 @@ public class SkinAnalysisAdapter extends ArrayAdapter<SkinAnalysisEntry> {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, SkinAnalysisResult.class);
-                intent.putExtra("ARG_USER_ID", entry.getUserId()); // User ID should now be available
+                intent.putExtra("ARG_USER_ID", entry.getUserId());
                 intent.putExtra("ARG_ANALYSIS_ID", entry.getKeyId());
                 intent.putExtra("ARG_DATE", entry.getUploadedDateTime());
                 intent.putExtra("ARG_TIME", entry.getUploadedDateTime());

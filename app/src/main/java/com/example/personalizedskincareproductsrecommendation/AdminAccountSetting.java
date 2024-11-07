@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -219,15 +220,17 @@ public class AdminAccountSetting extends AppCompatActivity {
         builder.setTitle("Edit Contact Number");
 
         final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_PHONE); // Set input type to phone number
         builder.setView(input);
 
         builder.setPositiveButton("Save", (dialog, which) -> {
             String newContact = input.getText().toString();
-            if (!TextUtils.isEmpty(newContact)) {
+
+            if (isValidContactNumber(newContact)) {
                 contactText.setText(newContact);
                 Toast.makeText(AdminAccountSetting.this, "Contact updated!", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(AdminAccountSetting.this, "Contact cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AdminAccountSetting.this, "Invalid contact number. Please enter a valid phone number.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -235,6 +238,13 @@ public class AdminAccountSetting extends AppCompatActivity {
 
         builder.show();
     }
+
+    // Helper method to validate the contact number
+    private boolean isValidContactNumber(String contact) {
+        // Check if it's empty, has only digits, and has a length between 7 and 15 (typical phone number lengths)
+        return !TextUtils.isEmpty(contact) && contact.matches("\\d{7,15}");
+    }
+
 
     private void updateUserProfile(String newContact) {
         if (TextUtils.isEmpty(newContact)) {

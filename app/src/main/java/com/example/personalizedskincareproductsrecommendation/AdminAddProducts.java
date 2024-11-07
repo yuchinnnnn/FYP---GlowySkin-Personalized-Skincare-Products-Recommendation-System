@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class AdminAddProducts extends AppCompatActivity {
 
     private TextInputLayout categoryLayout, typeLayout, nameLayout, functionLayout, afterUseLayout, ingredientLayout;
@@ -92,7 +94,21 @@ public class AdminAddProducts extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveProductToFirestore();
+                if (validateProductDetails()) {
+                    showConfirmationDialog();  // Show confirmation only if validation passes
+                } else {
+                    SweetAlertDialog dialog = new SweetAlertDialog(AdminAddProducts.this, SweetAlertDialog.ERROR_TYPE);
+                    dialog.setTitleText("Error");
+                    dialog.setContentText("Please fill in all the required fields.");
+                    dialog.show();
+                    dialog.setCancelable(false);
+                    dialog.setConfirmButton("OK", new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sDialog) {
+                            sDialog.dismissWithAnimation();
+                        }
+                    });
+                }
             }
         });
 
@@ -160,6 +176,83 @@ public class AdminAddProducts extends AppCompatActivity {
         }
     }
 
+    private boolean validateProductDetails() {
+        boolean isValid = true;
+
+        // Check if category is selected
+        if (categoryText.getText().toString().isEmpty()) {
+            categoryLayout.setError("Please select a category");
+            isValid = false;
+        } else {
+            categoryLayout.setError(null);
+        }
+
+        // Check if type is selected
+        if (typeText.getText().toString().isEmpty()) {
+            typeLayout.setError("Please select a type");
+            isValid = false;
+        } else {
+            typeLayout.setError(null);
+        }
+
+        // Check if product name is provided
+        if (name.getText().toString().isEmpty()) {
+            nameLayout.setError("Product name is required");
+            isValid = false;
+        } else {
+            nameLayout.setError(null);
+        }
+
+        // Check if brand name is provided
+        if (brand.getText().toString().isEmpty()) {
+            brand.setError("Brand name is required");
+            isValid = false;
+        } else {
+            brand.setError(null);
+        }
+
+        // Check if function is provided
+        if (function.getText().toString().isEmpty()) {
+            functionLayout.setError("Function description is required");
+            isValid = false;
+        } else {
+            functionLayout.setError(null);
+        }
+
+        // Check if after-use description is provided
+        if (afterUse.getText().toString().isEmpty()) {
+            afterUseLayout.setError("Please provide after-use description");
+            isValid = false;
+        } else {
+            afterUseLayout.setError(null);
+        }
+
+        // Check if ingredient information is provided
+        if (ingredient.getText().toString().isEmpty()) {
+            ingredientLayout.setError("Please provide ingredients information");
+            isValid = false;
+        } else {
+            ingredientLayout.setError(null);
+        }
+
+        return isValid;
+    }
+
+    private void showConfirmationDialog() {
+        SweetAlertDialog dialog = new SweetAlertDialog(AdminAddProducts.this, SweetAlertDialog.WARNING_TYPE);
+        dialog.setTitleText("Are you sure?");
+        dialog.setContentText("Your products will be uploaded once you confirm.");
+        dialog.show();
+        dialog.setCancelable(false);
+        dialog.setConfirmButton("Yes", new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                saveProductToFirestore();
+            }
+        });
+        dialog.setCancelText("No");
+    }
+
     private void saveProductToFirestore() {
         if (imageUri != null) {
             final String imageName = UUID.randomUUID().toString();
@@ -197,6 +290,7 @@ public class AdminAddProducts extends AppCompatActivity {
         String ingredients = ingredient.getText().toString();
         String category = categoryText.getText().toString();
         String type = typeText.getText().toString();
+
 
         Map<String, Object> product = new HashMap<>();
 //        product.put("id", productId);
@@ -236,6 +330,12 @@ public class AdminAddProducts extends AppCompatActivity {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
+                                                    SweetAlertDialog sDailog = new SweetAlertDialog(AdminAddProducts.this, SweetAlertDialog.SUCCESS_TYPE);
+                                                    sDailog.setTitleText("Successfully");
+                                                    sDailog.setContentText("Your products has been added successfully");
+                                                    sDailog.setConfirmText("Ok");
+                                                    sDailog.show();
+
                                                     Toast.makeText(AdminAddProducts.this, "Product added successfully", Toast.LENGTH_SHORT).show();
                                                     finish(); // Close the activity
                                                 } else {

@@ -21,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, Login.class);
                 startActivity(intent);
-                Toast.makeText(MainActivity.this, "Navigating to Login Page", Toast.LENGTH_SHORT).show();
             }
         });
 

@@ -25,6 +25,8 @@ import com.google.firebase.storage.StorageReference;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class AdminEditProducts extends AppCompatActivity {
 
     private String userId, productId, imageUrl;
@@ -107,7 +109,44 @@ public class AdminEditProducts extends AppCompatActivity {
         uploadImageButton = findViewById(R.id.upload_image);
         uploadImageButton.setOnClickListener(v -> selectImage());
 
-        save.setOnClickListener(v -> saveProduct());
+        save.setOnClickListener(v -> {
+            if (validateInputs()) {
+                saveProduct();
+            }
+        });
+    }
+
+    // Validation method for input fields
+    private boolean validateInputs() {
+        if (name.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Product name is required.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (brand.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Product brand is required.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (type.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Please select a product type.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (ingredients.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Product ingredients are required.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (function.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Product function is required.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (afterUse.getText().toString().trim().isEmpty()) {
+            Toast.makeText(this, "Product usage information is required.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (imageUri == null && (imageUrl == null || imageUrl.isEmpty())) {
+            Toast.makeText(this, "Please select a product image.", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
     }
 
     // Select image from gallery
@@ -125,7 +164,6 @@ public class AdminEditProducts extends AppCompatActivity {
 
                     // Display the selected image in the ImageView immediately using setImageURI
                     productImage.setImageURI(imageUri);
-
                     Log.d("AdminEditProducts", "Image selected: " + imageUri);
                 }
             });
@@ -145,23 +183,19 @@ public class AdminEditProducts extends AppCompatActivity {
             // Upload the image file
             productImageRef.putFile(imageUri)
                     .addOnSuccessListener(taskSnapshot -> productImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        imageUrl = uri.toString(); // Get the URL of the uploaded image
+                        imageUrl = uri.toString();
 
                         // Load the image into the ImageView using Glide
-                        if (imageUrl != null && !imageUrl.isEmpty()) {
-                            Glide.with(this).load(imageUrl).into(productImage);
-                        }
+                        Glide.with(this).load(imageUrl).into(productImage);
 
                         // Save product details, including the image URL, to Firestore
                         saveProductToFirestore(productName, productBrand, productType, productIngredients, productFunction, productUsage, imageUrl);
                     }))
                     .addOnFailureListener(e -> Toast.makeText(AdminEditProducts.this, "Image upload failed.", Toast.LENGTH_SHORT).show());
         } else {
-            // Save the product details without an image URL if no image is selected
             saveProductToFirestore(productName, productBrand, productType, productIngredients, productFunction, productUsage, imageUrl);
         }
     }
-
 
     private void saveProductToFirestore(String productName, String productBrand, String productType,
                                         String productIngredients, String productFunction,
@@ -169,10 +203,9 @@ public class AdminEditProducts extends AppCompatActivity {
 
         if (productId == null || productId.isEmpty()) {
             Toast.makeText(this, "Product ID is missing.", Toast.LENGTH_SHORT).show();
-            return; // Exit the function if productId is null or empty
+            return;
         }
 
-        // Create a product map with the provided data
         Map<String, Object> productData = new HashMap<>();
         productData.put("id", productId);
         productData.put("name", productName);
@@ -183,25 +216,38 @@ public class AdminEditProducts extends AppCompatActivity {
         productData.put("usage", productUsage);
         productData.put("image_url", imageUrl);
 
-        // Reference the Firestore document with the given product ID
         db.collection("skin_care_product").document(productId)
                 .set(productData)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Product saved successfully.", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(aVoid -> {
+                    new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
+                            .setTitleText("Success!")
+                            .setContentText("Product saved successfully.")
+                            .setConfirmText("OK")
+                            .setConfirmClickListener(sweetAlertDialog -> {
+                                sweetAlertDialog.dismissWithAnimation();
+                                finish(); // Finish the activity if you want to close it after saving
+                            })
+                            .show();
+                })
                 .addOnFailureListener(e -> Toast.makeText(this, "Failed to save product: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
-
     private void deleteProduct() {
-        // Delete product from Firestore
         db.collection("skin_care_product").document(productId)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
                     if (imageUrl != null && !imageUrl.isEmpty()) {
-                        // Delete image from Firebase Storage
                         StorageReference imageRef = storage.getReferenceFromUrl(imageUrl);
                         imageRef.delete()
                                 .addOnSuccessListener(aVoid1 -> {
-                                    Toast.makeText(AdminEditProducts.this, "Product deleted successfully", Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    new SweetAlertDialog(this, SweetAlertDialog.SUCCESS_TYPE)
+                                            .setTitleText("Success!")
+                                            .setContentText("Product deleted successfully.")
+                                            .setConfirmText("OK")
+                                            .setConfirmClickListener(sweetAlertDialog -> {
+                                                sweetAlertDialog.dismissWithAnimation();
+                                                finish(); // Finish the activity if you want to close it after saving
+                                            })
+                                            .show();
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(AdminEditProducts.this, "Failed to delete product image", Toast.LENGTH_SHORT).show());
                     } else {
