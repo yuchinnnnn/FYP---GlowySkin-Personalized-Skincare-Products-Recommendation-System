@@ -23,6 +23,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class AdminViewUserProfile extends AppCompatActivity {
@@ -30,9 +34,13 @@ public class AdminViewUserProfile extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private String userId;
     public static final String ARG_USER_ID = "userId";  // Using this consistently
-    private TextView usernameTextView, emailTextView, ageTextView, statusTextView, skinQuizResultsTextView;
+    private TextView usernameTextView, emailTextView, ageTextView, statusTextView, skinQuizResultsTextView, defaultText;
     private CircleImageView profilePic;
     private ListView skinAnalysisListView;
+    private SkinAnalysisAdapter skinAnalysisListAdapter;
+    private List<SkinAnalysisEntry> skinAnalysisEntries;
+    private DatabaseReference databaseReference;
+
     private ImageView back;
 
     @Override
@@ -56,9 +64,7 @@ public class AdminViewUserProfile extends AppCompatActivity {
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(AdminViewUserProfile.this, AdminManageProfile.class);
-                intent.putExtra(AdminDashboard.ARG_USER_ID, userId);
-                startActivity(intent);
+                finish();
             }
         });
 
@@ -71,6 +77,12 @@ public class AdminViewUserProfile extends AppCompatActivity {
         statusTextView = findViewById(R.id.status);
         skinQuizResultsTextView = findViewById(R.id.skin_quiz);
         skinAnalysisListView = findViewById(R.id.user_skin_analysis_list);
+        skinAnalysisListView.setDivider(null);
+        skinAnalysisEntries = new ArrayList<>();
+        skinAnalysisListAdapter = new SkinAnalysisAdapter(AdminViewUserProfile.this, skinAnalysisEntries);
+        skinAnalysisListView.setAdapter(skinAnalysisListAdapter);
+
+        defaultText = findViewById(R.id.default_text);
 
         // Fetch and display the user details
         fetchUserDetails(userId);
@@ -93,6 +105,7 @@ public class AdminViewUserProfile extends AppCompatActivity {
                     statusTextView.setText(user.getStatus());
 
                     fetchSkinQuizResults(userId);
+                    fetchSkinAnalysisData(userId);
                 } else {
                     Toast.makeText(AdminViewUserProfile.this, "User not found", Toast.LENGTH_SHORT).show();
                 }
@@ -146,6 +159,59 @@ public class AdminViewUserProfile extends AppCompatActivity {
         });
     }
 
+    private void fetchSkinAnalysisData(String userId) {
+        DatabaseReference analysisResult = FirebaseDatabase.getInstance().getReference("SkinAnalysis").child(userId);
+        analysisResult.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                skinAnalysisEntries.clear();
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot analysisSnapshot : dataSnapshot.getChildren()) {
+                        String userId = analysisSnapshot.child("userId").getValue(String.class);
+                        String keyId = analysisSnapshot.getKey(); // Unique key for each
+                        String timestamp = analysisSnapshot.child("uploadedDateTime").getValue(String.class); // Ensure the correct field is fetched
+                        String imageUrl = analysisSnapshot.child("imageUrl").getValue(String.class);
+                        String skinType = analysisSnapshot.child("skinType").getValue(String.class);
+                        Log.d("SkinAnalysisHistory", "Analysis ID: " + keyId + ", Timestamp: " + timestamp + ", User ID: " + userId);
+
+                        // Extract skin condition data
+                        float acne = analysisSnapshot.child("skinCondition/acne").getValue(Float.class);
+                        float darkCircle = analysisSnapshot.child("skinCondition/darkCircle").getValue(Float.class);
+                        float darkSpot = analysisSnapshot.child("skinCondition/darkSpot").getValue(Float.class);
+                        float pores = analysisSnapshot.child("skinCondition/pores").getValue(Float.class);
+                        float redness = analysisSnapshot.child("skinCondition/redness").getValue(Float.class);
+                        float wrinkles = analysisSnapshot.child("skinCondition/wrinkles").getValue(Float.class);
+
+                        // Create SkinCondition object
+                        SkinCondition skinCondition = new SkinCondition(acne, redness, wrinkles, darkSpot, darkCircle, pores);
+
+                        // Create SkinAnalysisEntry object
+                        SkinAnalysisEntry entry = new SkinAnalysisEntry(keyId, timestamp, userId, imageUrl, skinType, skinCondition);
+                        skinAnalysisEntries.add(entry);
+                    }
+
+                    Log.d("SkinAnalysisHistory", "Entries count: " + skinAnalysisEntries.size());
+                    skinAnalysisListAdapter.notifyDataSetChanged();
+                    // Handle visibility
+                    if (skinAnalysisEntries.isEmpty()) {
+                        skinAnalysisListView.setVisibility(View.GONE);
+                        defaultText.setVisibility(View.VISIBLE);
+                    } else {
+                        skinAnalysisListView.setVisibility(View.VISIBLE);
+                        defaultText.setVisibility(View.GONE);
+                    }
+                } else {
+                    skinAnalysisListView.setVisibility(View.GONE);
+                    defaultText.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("SkinLogHistory", "Database error: " + databaseError.getMessage());
+            }
+        });
+    }
 
     private void loadProfilePhoto(String userId) {
         DatabaseReference userReference = FirebaseDatabase.getInstance().getReference("Users").child(userId);

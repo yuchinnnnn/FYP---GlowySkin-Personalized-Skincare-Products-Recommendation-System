@@ -32,6 +32,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
 
+import cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class AccountFragment extends Fragment {
 
     private static final String ARG_USER_ID = "userId";
@@ -203,6 +205,24 @@ public class AccountFragment extends Fragment {
         // Set click listener for delete account to show a confirmation dialog
         deleteAccount.setOnClickListener(v -> {
             // Show a confirmation dialog to delete account
+            SweetAlertDialog dialog = new SweetAlertDialog(getContext(), SweetAlertDialog.WARNING_TYPE);
+            dialog.setTitleText("Are you sure?");
+            dialog.setContentText("Do you want to delete your account?");
+            dialog.setConfirmText("Yes");
+            dialog.setConfirmClickListener(sweetAlertDialog -> {
+                sweetAlertDialog.dismissWithAnimation();
+                // Delete account
+                databaseReference.removeValue();
+                storageReference.delete();
+                Intent intent = new Intent(getActivity(), Login.class);
+                startActivity(intent);
+                getActivity().finish();
+            });
+            dialog.setCancelText("No");
+            dialog.setCancelClickListener(sweetAlertDialog -> {
+                sweetAlertDialog.dismissWithAnimation();
+            });
+            dialog.show();
         });
 
         return view;

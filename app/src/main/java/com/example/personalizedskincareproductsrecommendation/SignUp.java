@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,6 +61,24 @@ public class SignUp extends AppCompatActivity {
         signupPassword = findViewById(R.id.signupPassword);
         signupButton = findViewById(R.id.signupButton);
         login = findViewById(R.id.login);
+        ImageView showHidePassword = findViewById(R.id.showHidePassword);
+        showHidePassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (signupPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+                    // Show password
+                    signupPassword.setInputType(InputType.TYPE_CLASS_TEXT);
+                    showHidePassword.setImageResource(R.drawable.baseline_remove_red_eye_24); // Change to "eye open" icon
+                } else {
+                    // Hide password
+                    signupPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    showHidePassword.setImageResource(R.drawable.baseline_visibility_off_24); // Change to "eye closed" icon
+                }
+                // Move cursor to the end
+                signupPassword.setSelection(signupPassword.getText().length());
+            }
+        });
+
 
         // Create a SpannableString with the desired text
         String text = "Already an account? Login";
@@ -90,6 +109,12 @@ public class SignUp extends AppCompatActivity {
                 String username = signupUsername.getText().toString().trim();
                 String email = signupEmail.getText().toString().trim();
                 String pass = signupPassword.getText().toString().trim();
+                if (username.isEmpty() && email.isEmpty() && pass.isEmpty()) {
+                    signupUsername.setError("Username cannot be empty.");
+                    signupEmail.setError("Email cannot be empty.");
+                    signupPassword.setError("Password cannot be empty.");
+                    return;
+                }
 
                 if (username.isEmpty()) {
                     signupUsername.setError("Username cannot be empty.");
@@ -100,6 +125,13 @@ public class SignUp extends AppCompatActivity {
                     signupEmail.setError("Email cannot be empty.");
                     return;
                 }
+
+                String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+                if (!email.matches(emailPattern)) {
+                    signupEmail.setError("Invalid email format.");
+                    return;
+                }
+
 
                 if (pass.isEmpty()) {
                     signupPassword.setError("Password cannot be empty.");

@@ -73,8 +73,8 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
         back = findViewById(R.id.back_button);
 
         next.setOnClickListener(v -> {
-            if (!selectedSensitives.isEmpty()) {
-                if (!existingSensitives.equals(selectedSensitives)) {
+            if (selectedSensitives.isEmpty()) {
+                if (existingSensitives != null && !existingSensitives.isEmpty() && !selectedSensitives.equals(existingSensitives)) {
                     new SweetAlertDialog(SkinTypeQuiz2.this, SweetAlertDialog.WARNING_TYPE)
                             .setTitleText("Confirm Change")
                             .setContentText("Are you sure you want to change your answer?")
@@ -90,6 +90,11 @@ public class SkinTypeQuiz2 extends AppCompatActivity {
                 } else {
                     updateSensitiveInDatabase();
                 }
+            } else if (existingSensitives != null) { // If user didn't make changes but has an existing answer
+                Intent intent = new Intent(SkinTypeQuiz2.this, SkinTypeQuiz3.class);
+                intent.putExtra(ARG_USER_ID, userId);
+                Toast.makeText(SkinTypeQuiz2.this, "Answer saved", Toast.LENGTH_SHORT).show();
+                startActivity(intent);
             } else {
                 Toast.makeText(SkinTypeQuiz2.this, "Please select an answer", Toast.LENGTH_SHORT).show();
             }

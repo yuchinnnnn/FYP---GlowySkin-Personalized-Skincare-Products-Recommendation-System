@@ -36,7 +36,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class SkinAnalysisResult extends AppCompatActivity {
 
-    private TextView skinTypeResult, skinConditionResult;
+    private TextView skinTypeResult, skinConditionResult, message;
     private RecyclerView recommendedProductsRecyclerView;
     private ImageView back, info, filter;
     private String userId, keyId, skinType, targetCondition, lowestCondition;
@@ -54,9 +54,9 @@ public class SkinAnalysisResult extends AppCompatActivity {
         skinTypeMapping = new HashMap<>();
         skinTypeMapping.put("Sensitive", Arrays.asList("Redness Reducing", "Reduces Irritation"));
         skinTypeMapping.put("Oily", Arrays.asList("Good For Oily Skin"));
-        skinTypeMapping.put("Dry", Arrays.asList("Hydrating"));
-        skinTypeMapping.put("Combination", Arrays.asList("Redness Reducing", "Hydrating"));
-        skinTypeMapping.put("Normal", Arrays.asList("General Care"));
+            skinTypeMapping.put("Dry", Arrays.asList("Hydrating"));
+        skinTypeMapping.put("Combination", Arrays.asList("Good For Oily Skin", "Hydrating"));
+        skinTypeMapping.put("Normal", Arrays.asList("Hydrating"));
     }
 
     private void setupSkinConditionMapping() {
@@ -64,12 +64,18 @@ public class SkinAnalysisResult extends AppCompatActivity {
         skinConditionMapping.put("acne", Arrays.asList("Acne Control", "Acne Fighting"));
         skinConditionMapping.put("redness", Arrays.asList("Redness Reducing", "Soothing","Reduces Irritation"));
         skinConditionMapping.put("wrinkles", Arrays.asList("Anti-Aging"));
-        skinConditionMapping.put("darkSpots", Arrays.asList("Brightening", "Dark Spot"));
+        skinConditionMapping.put("darkSpots", Arrays.asList("Brightening", "Scar Healing"));
         skinConditionMapping.put("pores", Arrays.asList("Reduces Large Pores", "Minimizes Pores"));
         skinConditionMapping.put("darkCircle", Arrays.asList("Brightening"));
     }
 
     private boolean isProductRecommended(Product product, String targetCondition) {
+        String afterUseData = product.getAfterUse();
+        if (afterUseData == null) {
+            Log.w(TAG, "Product afterUse is null for product: " + product.getName());
+            return false;
+        }
+
         List<String> afterUses = Arrays.asList(product.getAfterUse().split(","));
 
         // Check if the product matches the skin type
@@ -165,6 +171,7 @@ public class SkinAnalysisResult extends AppCompatActivity {
     private void initializeViews() {
         skinTypeResult = findViewById(R.id.skinTypeResult);
         skinConditionResult = findViewById(R.id.skinConditionResult);
+        message = findViewById(R.id.message);
         recommendedProductsRecyclerView = findViewById(R.id.recommendedProductsRecyclerView);
         recommendedProductsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -237,19 +244,46 @@ public class SkinAnalysisResult extends AppCompatActivity {
         }
     }
 
-
     private String formatSkinConditionResults(HashMap<String, Float> skinConditions) {
+        // Custom labels for skin conditions
+        HashMap<String, String> conditionLabels = new HashMap<>();
+        conditionLabels.put("acne", "Acne");
+        conditionLabels.put("darkCircle", "Dark Circle");
+        conditionLabels.put("darkSpot", "Dark Spots");
+        conditionLabels.put("pores", "Pores");
+        conditionLabels.put("redness", "Redness");
+        conditionLabels.put("wrinkles", "Wrinkles");
+
         StringBuilder results = new StringBuilder();
+        String lowestCondition = null;
+        float lowestValue = Float.MAX_VALUE;
+
+        // Iterate through skin conditions and format the text
         for (String condition : skinConditions.keySet()) {
             int value = skinConditions.get(condition).intValue();
-            String resultLine = condition + ": " + value + "%\n";
 
-            // Apply color based on severity
-            int color = value >= 80 ? Color.GREEN : value <= 50 ? Color.RED : Color.BLACK;
-            results.append(getColoredText(resultLine, color));
+            // Update the lowest value and condition
+            if (value < lowestValue) {
+                lowestValue = value;
+                lowestCondition = conditionLabels.get(condition);
+            }
+
+            // Add the custom label to the results
+            String label = conditionLabels.getOrDefault(condition, "Unknown");
+            results.append(label).append(" : " + value + "%\n");
         }
+
+        // Append the recommended product section
+        if (lowestCondition != null) {
+            String text = "The recommended products will focus on the lowest percentage skin condition: "
+                    + lowestCondition + " (" + (int) lowestValue + "%)";
+
+            message.setText(text);
+        }
+
         return results.toString();
     }
+
 
     private SpannableString getColoredText(String text, int color) {
         SpannableString spannable = new SpannableString(text);

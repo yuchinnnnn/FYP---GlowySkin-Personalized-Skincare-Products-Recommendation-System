@@ -83,6 +83,7 @@ public class SkinTypeQuiz1 extends AppCompatActivity {
                 Intent intent = new Intent(SkinTypeQuiz1.this, SkinTypeQuiz2.class);
                 intent.putExtra(ARG_USER_ID, userId);
                 intent.putExtra(ARG_SELECTED_SKIN_TYPE, existingSkinType); // Pass existing answer
+                Toast.makeText(SkinTypeQuiz1.this, "Answer saved", Toast.LENGTH_SHORT).show();
                 startActivity(intent);
             } else {
                 Toast.makeText(SkinTypeQuiz1.this, "Please select an answer", Toast.LENGTH_SHORT).show(); // No selection and no existing answer

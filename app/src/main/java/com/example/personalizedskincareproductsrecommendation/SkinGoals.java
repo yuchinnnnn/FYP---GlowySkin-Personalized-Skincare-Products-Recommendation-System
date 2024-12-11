@@ -87,10 +87,7 @@ public class SkinGoals extends AppCompatActivity {
 
         saveButton.setOnClickListener(v -> saveSkinGoals());
         back.setOnClickListener(v -> {
-            HomeFragment homeFragment = HomeFragment.newInstance(userId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
-                    .commit();
+            finish();
         });
 
         DatabaseReference skinGoalsRef = databaseReference.child("skinGoals");
@@ -169,6 +166,11 @@ public class SkinGoals extends AppCompatActivity {
                                             new SweetAlertDialog(SkinGoals.this, SweetAlertDialog.SUCCESS_TYPE)
                                                     .setTitleText("Saved!")
                                                     .setContentText("Your skin goals have been updated successfully.")
+                                                    .setConfirmText("OK")
+                                                    .setConfirmClickListener(sweetAlertDialog -> {
+                                                        sweetAlertDialog.dismissWithAnimation();
+                                                        finish();
+                                                    })
                                                     .show();
                                         } else {
                                             new SweetAlertDialog(SkinGoals.this, SweetAlertDialog.ERROR_TYPE)

@@ -57,10 +57,12 @@ public class SkinType extends AppCompatActivity {
         sensitive = findViewById(R.id.sensitive);
         sensitive_dry = findViewById(R.id.dry_sensitive);
 
-        userId = getIntent().getStringExtra("userId");
+        userId = getIntent().getStringExtra(ARG_USER_ID);
         if (userId == null) {
-            FirebaseAuth mAuth = FirebaseAuth.getInstance();
-            userId = mAuth.getCurrentUser().getUid();
+            // Handle the case where userId is not passed or retrieved
+            Toast.makeText(this, "User ID not found", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
         }
         databaseReference = FirebaseDatabase.getInstance().getReference("Users").child(userId);
 
@@ -77,6 +79,7 @@ public class SkinType extends AppCompatActivity {
 
         skinAnalysis.setOnClickListener(v -> {
             Intent intent = new Intent(SkinType.this, SkinAnalysis.class);
+            intent.putExtra("ARG_USER_ID", userId);
             startActivity(intent);
         });
 
@@ -137,8 +140,6 @@ public class SkinType extends AppCompatActivity {
                     Map<String, Object> skinTypesMap = (Map<String, Object>) result;
                     String currentSkinTypesString = (String) skinTypesMap.get("skinType");  // Extract the skinType value
                     highlightChips(currentSkinTypesString);
-                } else {
-                    Toast.makeText(SkinType.this, "Unexpected data format", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(SkinType.this, "Failed to retrieve current skin types.", Toast.LENGTH_SHORT).show();

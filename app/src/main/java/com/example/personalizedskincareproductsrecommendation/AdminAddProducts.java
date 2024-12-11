@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -301,7 +302,7 @@ public class AdminAddProducts extends AppCompatActivity {
         product.put("ingredients", ingredients);
         product.put("category", category);
         product.put("type", type);
-        product.put("imageUrl", imageUrl);
+        product.put("image_url", imageUrl);
 
         firestore.collection("skin_care_product")
                 .orderBy("name")  // Order by any field that ensures correct order; here, we're ordering by "name"
@@ -321,6 +322,7 @@ public class AdminAddProducts extends AppCompatActivity {
                                 int lastProductNumber = Integer.parseInt(lastProductId.replaceAll("[^0-9]", "")); // Extract number from product_ID1234
                                 int newProductNumber = lastProductNumber + 1;
                                 String newProductId = "product_" + newProductNumber;
+                                Log.d("NEW ADDED PRODUCT", "New product ID: " + newProductId);
 
                                 // Now save the product with the new product ID
                                 firestore.collection("skin_care_product")
@@ -330,14 +332,18 @@ public class AdminAddProducts extends AppCompatActivity {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
-                                                    SweetAlertDialog sDailog = new SweetAlertDialog(AdminAddProducts.this, SweetAlertDialog.SUCCESS_TYPE);
-                                                    sDailog.setTitleText("Successfully");
-                                                    sDailog.setContentText("Your products has been added successfully");
-                                                    sDailog.setConfirmText("Ok");
-                                                    sDailog.show();
-
-                                                    Toast.makeText(AdminAddProducts.this, "Product added successfully", Toast.LENGTH_SHORT).show();
-                                                    finish(); // Close the activity
+                                                    SweetAlertDialog sDialog = new SweetAlertDialog(AdminAddProducts.this, SweetAlertDialog.SUCCESS_TYPE);
+                                                    sDialog.setTitleText("Successfully");
+                                                    sDialog.setContentText("Your product has been added successfully");
+                                                    sDialog.setConfirmText("Ok");
+                                                    sDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                                                        @Override
+                                                        public void onClick(SweetAlertDialog sweetAlertDialog) {
+                                                            sDialog.dismiss(); // Dismiss the dialog
+                                                            finish(); // Close the activity after dismissing the dialog
+                                                        }
+                                                    });
+                                                    sDialog.show();
                                                 } else {
                                                     Toast.makeText(AdminAddProducts.this, "Failed to add product", Toast.LENGTH_SHORT).show();
                                                 }
@@ -345,7 +351,7 @@ public class AdminAddProducts extends AppCompatActivity {
                                         });
                             } else {
                                 // If no products exist, you can start with an ID like product_1
-                                String newProductId = "product_1";
+                                String newProductId = "product_0";
                                 firestore.collection("skin_care_product")
                                         .document(newProductId)
                                         .set(product)

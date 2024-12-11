@@ -109,19 +109,18 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginBottom="24dp" />
 
-        <!--    <TextView-->
-        <!--        android:id="@+id/tipsLabel"-->
-        <!--        android:layout_width="wrap_content"-->
-        <!--        android:layout_height="wrap_content"-->
-        <!--        android:layout_marginStart="10dp"-->
-        <!--        android:layout_marginTop="10dp"-->
-        <!--        android:text="Personalized Skincare Tips:"-->
-        <!--        android:textSize="18sp"-->
-        <!--        android:textColor="@color/black"-->
-        <!--        android:textStyle="bold"-->
-        <!--        app:layout_constraintTop_toBottomOf="@id/skinConditionResult"-->
-        <!--        app:layout_constraintStart_toStartOf="parent"-->
-        <!--        android:layout_marginBottom="8dp" />-->
+            <TextView
+                android:id="@+id/message"
+                android:layout_width="310dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="message"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@id/skinConditionResult"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginBottom="8dp" />
 
         <!--    <TextView-->
         <!--        android:id="@+id/tipsContent"-->
@@ -146,7 +145,7 @@
             android:textSize="18sp"
             android:textColor="@color/black"
             android:textStyle="bold"
-            app:layout_constraintTop_toBottomOf="@id/skinConditionResult"
+            app:layout_constraintTop_toBottomOf="@id/message"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginBottom="8dp" />
 
@@ -158,7 +157,7 @@
             android:src="@drawable/baseline_filter_list_24"
             app:layout_constraintTop_toTopOf="@id/productsLabel"
             app:layout_constraintBottom_toBottomOf="@id/productsLabel"
-            android:layout_marginStart="70dp"/>
+            android:layout_marginStart="100dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recommendedProductsRecyclerView"

@@ -44,22 +44,26 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Reminder reminder = remindersList.get(position);
 
-        // Check if the reminder is for today
         if (isReminderForToday(reminder)) {
             holder.reminderTitle.setText(reminder.getTitle());
             holder.reminderText.setText(getFormattedReminderText(reminder));
             holder.sunImageView.setImageResource(getIconForReminderKey(reminder.getKey()));
-            holder.defaultText.setVisibility(View.GONE);
 
-            // Check if the reminder time has passed
+            if (holder.defaultText != null) {
+                holder.defaultText.setVisibility(View.GONE); // Hide default text if reminder exists
+            }
+
             if (hasReminderTimePassed(reminder)) {
-                holder.notificationLayout.setBackgroundColor(Color.parseColor("#EDEDED")); // Gray out background for passed reminders
+                holder.notificationLayout.setBackgroundColor(Color.parseColor("#EDEDED"));
             } else {
-                holder.notificationLayout.setBackgroundColor(Color.WHITE); // Reset for active reminders
+                holder.notificationLayout.setBackgroundColor(Color.WHITE);
                 holder.reminderText.setTextColor(Color.BLACK);
             }
         } else {
-            // Hide the item if the reminder is not for today
+            // If no reminder for today, show default text and hide the reminder view
+            if (holder.defaultText != null) {
+                holder.defaultText.setVisibility(View.VISIBLE); // Show default text if no reminder
+            }
             holder.itemView.setVisibility(View.GONE);
             holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(0, 0));
         }

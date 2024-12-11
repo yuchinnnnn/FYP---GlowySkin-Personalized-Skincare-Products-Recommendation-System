@@ -158,6 +158,7 @@ public class SkinTypeQuiz3 extends AppCompatActivity {
     private void proceedToNextQuiz() {
         Intent intent = new Intent(SkinTypeQuiz3.this, SkinTypeQuiz4.class);
         intent.putExtra(ARG_USER_ID, userId);
+        Toast.makeText(SkinTypeQuiz3.this, "Answer saved", Toast.LENGTH_SHORT).show();
         startActivity(intent);
     }
 

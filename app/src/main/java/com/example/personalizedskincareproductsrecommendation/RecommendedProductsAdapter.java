@@ -51,8 +51,10 @@ public class RecommendedProductsAdapter extends RecyclerView.Adapter<Recommended
                 Toast.makeText(context, "Product clicked: " + product.getName(), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(context, ProductDetails.class);
                 intent.putExtra("productBrand", product.getBrand());
+                intent.putExtra("productName", product.getName());
                 intent.putExtra("productType", product.getType());
                 intent.putExtra("productFunction", product.getFunction());
+                intent.putExtra("productAfterUse", product.getAfterUse());
                 intent.putExtra("productIngredients", product.getIngredients());
                 intent.putExtra("imageUrl", product.getImageUrl());
                 context.startActivity(intent);

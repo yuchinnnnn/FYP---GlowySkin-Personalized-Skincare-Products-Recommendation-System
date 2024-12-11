@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextPaint;
@@ -73,7 +74,7 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Callback {
 
-    private static final int CAMERA_PERMISSION_CODE = 100;
+    private static final int CAMERA_PERMISSION_CODE = 100; //A constant to identify permission request
     private Camera camera;
     private SurfaceView surfaceView;
     private SurfaceHolder surfaceHolder;
@@ -554,6 +555,7 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
         startActivityForResult(intent, 1);
     }
 
+
     // Load the TFLite model for skin condition
     private Interpreter loadSkinConditionModel() {
 
@@ -591,17 +593,26 @@ public class SkinAnalysis extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 1 && resultCode == RESULT_OK) {
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
             try {
-                // Retrieve image from the gallery
-                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(data.getData()));
+                // Get the URI of the selected image
+                Uri imageUri = data.getData();
 
-                // Save the image to the device storage
-                uploadImageToFirebaseStorage(bitmap, userId, skinType, skinConditionPercentages); // Pass skinType and skinConditionPercentages to the method"Uploaded_Image");
+                // Convert URI to Bitmap
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
 
-                analyzeSkin(bitmap);  // Pass the image for analysis
+                // Generate a new keyId for each uploaded image
+                keyId = databaseReference.push().getKey();
+
+                // Analyze skin to get skin type and skin condition percentages
+                analyzeSkin(bitmap); // This sets skinType and skinConditionPercentages
+
+                // Call uploadImageToFirebaseStorage with the skinType and skinConditionPercentages
+                uploadImageToFirebaseStorage(bitmap, userId, skinType, skinConditionPercentages);
+
             } catch (IOException e) {
                 e.printStackTrace();
+                Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
             }
         }
     }

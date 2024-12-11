@@ -102,15 +102,30 @@ public class SkinLog extends AppCompatActivity {
 
         // Set click listeners
         back.setOnClickListener(v -> {
-            HomeFragment homeFragment = HomeFragment.newInstance(userId);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, homeFragment)
-                    .addToBackStack(null)
-                    .commit();
+            finish();
         });
 
         done = findViewById(R.id.done_button);
-        done.setOnClickListener(v -> saveImageDialog());
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(validateImage()){
+                    saveImageDialog();
+                } else {
+                    SweetAlertDialog dialog = new SweetAlertDialog(SkinLog.this, SweetAlertDialog.ERROR_TYPE);
+                    dialog.setTitleText("Error");
+                    dialog.setContentText("Please take all the selfies.");
+                    dialog.show();
+                    dialog.setCancelable(false);
+                    dialog.setConfirmButton("OK", new SweetAlertDialog.OnSweetClickListener() {
+                        @Override
+                        public void onClick(SweetAlertDialog sDialog) {
+                            sDialog.dismissWithAnimation();
+                        }
+                    });
+                }
+            }
+        });
 
         left_selfie.setOnClickListener(v -> {
             showImagePickerDialog("left_selfie");
@@ -271,9 +286,33 @@ public class SkinLog extends AppCompatActivity {
                         neckUri = downloadUri;
                         break;
                 }
-                Toast.makeText(SkinLog.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(SkinLog.this, "Image uploaded successfully", Toast.LENGTH_SHORT).show();
             }).addOnFailureListener(e -> Toast.makeText(SkinLog.this, "Failed to get download URL", Toast.LENGTH_SHORT).show());
         }).addOnFailureListener(e -> Toast.makeText(SkinLog.this, "Image upload failed", Toast.LENGTH_SHORT).show());
+    }
+
+    private boolean validateImage(){
+        boolean isValid = true;
+
+        // Check if category is selected
+        if (left_selfie.toString().isEmpty()) {
+            isValid = false;
+            Toast.makeText(this, "Please select a selfie", Toast.LENGTH_SHORT).show();
+        }
+        if (front_selfie.toString().isEmpty()) {
+            isValid = false;
+            Toast.makeText(this, "Please select a selfie", Toast.LENGTH_SHORT).show();
+        }
+        if (right_selfie.toString().isEmpty()) {
+            isValid = false;
+            Toast.makeText(this, "Please select a selfie", Toast.LENGTH_SHORT).show();
+        }
+        if (neck_selfie.toString().isEmpty()) {
+            isValid = false;
+            Toast.makeText(this, "Please select a selfie", Toast.LENGTH_SHORT).show();
+        }
+
+        return isValid;
     }
 
     // Show a dialog to confirm saving images
